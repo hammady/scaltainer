@@ -47,7 +47,9 @@ If not set, it defaults to local unix socket.
 - `HIREFIRE_TOKEN`: If your application is configured the
 [hirefire](https://help.hirefire.io/guides/hirefire/job-queue-any-programming-language) way, you need to
 set `HIREFIRE_TOKEN` environment variable before invoking
-`scaltainer`.
+`scaltainer`. This is used when probing your application
+endpoint (see below) to get the number of jobs per queue
+for each worker.
 
 - `NEW_RELIC_LICENSE_KEY`: New Relic license key. Currently New Relic
 is used to retrieve average response time metric for web services.
@@ -58,7 +60,7 @@ measure average response time in the past 3 minutes. Default value is 5.
 
 ### Configuration file
 
-The configuration file (determined by `-f FILE` command line parameter) should have be in the following form:
+The configuration file (determined by `-f FILE` command line parameter) should be in the following form:
 
     # to get worker metrics
     endpoint: https://your-app.com/hirefire/$HIREFIRE_TOKEN/info
