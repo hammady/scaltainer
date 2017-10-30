@@ -28,6 +28,14 @@ module Scaltainer
       logger = Logger.new(STDOUT)
       logger.level = Logger::INFO
       Docker.logger = logger
+
+      @default_service_config = {
+        "min" => 0,
+        "upscale_quantity" => 1,
+        "downscale_quantity" => 1,
+        "upscale_sensitivity" => 1,
+        "downscale_sensitivity" => 1
+      }
     end
 
     def run
@@ -74,7 +82,8 @@ module Scaltainer
           begin
             state[service_name] ||= {}
             service_state = state[service_name]
-            process_service_logic(service_name, service_config, service_state, service_prefix, type, metrics)
+            service_config = @default_service_config.merge service_config
+            process_service_logic service_name, service_config, service_state, service_prefix, type, metrics
           rescue RuntimeError => e
             # skipping service
             $stderr.puts e.message
@@ -94,7 +103,7 @@ module Scaltainer
       metric = metrics[service_name]
       raise Warning.new("Configured service '#{service_name}' not found in metrics endpoint") unless metric
       desired_replicas = type.determine_desired_replicas(metric, config, current_replicas)
-      desired_replicas = [config["max"], desired_replicas].min
+      desired_replicas = [config["max"], desired_replicas].min if config["max"]
       desired_replicas = [config["min"], desired_replicas].max
       diff = desired_replicas - current_replicas
       if diff > 0

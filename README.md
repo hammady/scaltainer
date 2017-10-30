@@ -1,8 +1,7 @@
 # Scaltainer
 
 A Ruby gem to monitor docker swarm mode services and auto-scale them based on user configuration.
-It can be used to monitor web services and worker services. The web services type has metrics like response time
-optionally with [New Relic](https://newrelic.com/) support. The worker services type metrics are basically the queue size for each.
+It can be used to monitor web services and worker services. The web services type has metrics like response time using [New Relic](https://newrelic.com/). The worker services type metrics are basically the queue size for each.
 This gem is inspired by [HireFire](https://manager.hirefire.io/) and was indeed motivated by the migration
 from [Heroku](https://www.heroku.com/) to Docker Swarm mode.
 
@@ -70,23 +69,23 @@ The configuration file (determined by `-f FILE` command line parameter) should b
     web_services:
       # each service name should match docker service name
       web:
-        # New Relic application id
+        # New Relic application id (required)
         newrelic_app_id: <app_id>
-        # minimum replicas to maintain
+        # minimum replicas to maintain (default: 0)
         min: 1
-        # maximum replicas to maintain
+        # maximum replicas to maintain (default: unlimited)
         max: 5
-        # maximum response time above which to scale up
+        # maximum response time above which to scale up (required)
         max_response_time: 300
-        # minimum response time below which to scale down
+        # minimum response time below which to scale down (required)
         min_response_time: 100
-        # replica quantitiy to scale up at a time
+        # replica quantitiy to scale up at a time (default: 1)
         upscale_quantity: 2
-        # replica quantitiy to scale down at a time
+        # replica quantitiy to scale down at a time (default: 1)
         downscale_quantity: 1
-        # number of breaches to wait for before scaling up
+        # number of breaches to wait for before scaling up (default: 1)
         upscale_sensitivity: 1
-        # number of breaches to wait for before scaling down
+        # number of breaches to wait for before scaling down (default: 1)
         downscale_sensitivity: 1
       webapi:
         ...
@@ -94,7 +93,7 @@ The configuration file (determined by `-f FILE` command line parameter) should b
       worker1:
         min: 1
         max: 10
-        # number of jobs each worker replica should process
+        # number of jobs each worker replica should process (required)
         # the bigger the ratio, the less number of workers scaled out
         ratio: 3
         upscale_sensitivity: 1
@@ -117,9 +116,7 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/hammad
 ## TODOs
 
 - Logging
-- Rake task
 - Rspec
-- Merge default config
 
 ## License
 

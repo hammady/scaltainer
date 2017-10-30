@@ -45,6 +45,8 @@ module Scaltainer
 
     def determine_desired_replicas(metric, service_config, current_replicas)
       super
+      raise ConfigurationError.new("Missing max_response_time in web service configuration") unless service_config["max_response_time"]
+      raise ConfigurationError.new("Missing min_response_time in web service configuration") unless service_config["min_response_time"]
       desired_replicas = if metric > service_config["max_response_time"]
         current_replicas + service_config["upscale_quantity"]
       elsif metric < service_config["min_response_time"]
@@ -73,6 +75,7 @@ module Scaltainer
 
     def determine_desired_replicas(metric, service_config, current_replicas)
       super
+      raise ConfigurationError.new("Missing ratio in worker service configuration") unless service_config["ratio"]
       desired_replicas = (metric * 1.0 / service_config["ratio"]).ceil
     end
   end
