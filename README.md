@@ -27,7 +27,6 @@ Or install it yourself as:
     scaltainer
 
 This will do a one-time check on the running service replicas and sends scaling out/in commands to the swarm cluster as appropriate.
-The `DOCKER_HOST` environment should be set to point to the cluster manager node on the docker port 2375.
 Configuration is read from `scaltainer.yml` by default. If you want to read from another file add `-f yourconfig.yml`:
 
     scaltainer -f yourconfig.yml
