@@ -6,7 +6,7 @@ optionally with [New Relic](https://newrelic.com/) support. The worker services 
 This gem is inspired by [HireFire](https://manager.hirefire.io/) and was indeed motivated by the migration
 from [Heroku](https://www.heroku.com/) to Docker Swarm mode.
 
-## Installation
+## Installation (not published yet to rubygems)
 
 Add this line to your application's Gemfile:
 
@@ -39,14 +39,68 @@ Typically, the above command should be put inside a cronjob that is triggered ev
 
 ## Configuration
 
-Details of configuration parameters can be found in [HireFire docs](https://help.hirefire.io/guides).
-Set the environment variable `DOCKER_URL` to point to the docker engine URL.
+### Environment variables
+
+- `DOCKER_URL`: Should point to the docker engine URL.
 If not set, it defaults to local unix socket.
 
-If your application is configured the
+- `HIREFIRE_TOKEN`: If your application is configured the
 [hirefire](https://help.hirefire.io/guides/hirefire/job-queue-any-programming-language) way, you need to
 set `HIREFIRE_TOKEN` environment variable before invoking
 `scaltainer`.
+
+- `NEW_RELIC_LICENSE_KEY`: New Relic license key. Currently New Relic
+is used to retrieve average response time metric for web services.
+More monitoring services can be added in the future.
+- `RESPONSE_TIME_WINDOW`: Time window in minutes to measure
+average response time till the moment. For example 3 means
+measure average response time in the past 3 minutes. Default value is 5.
+
+### Configuration file
+
+The configuration file (determined by `-f FILE` command line parameter) should have be in the following form:
+
+    # to get worker metrics
+    endpoint: https://your-app.com/hirefire/$HIREFIRE_TOKEN/info
+    # optional docker swarm stack name
+    stack_name: mystack
+    # list of web services to monitor
+    web_services:
+      # each service name should match docker service name
+      web:
+        # New Relic application id
+        newrelic_app_id: <app_id>
+        # minimum replicas to maintain
+        min: 1
+        # maximum replicas to maintain
+        max: 5
+        # maximum response time above which to scale up
+        max_response_time: 300
+        # minimum response time below which to scale down
+        min_response_time: 100
+        # replica quantitiy to scale up at a time
+        upscale_quantity: 2
+        # replica quantitiy to scale down at a time
+        downscale_quantity: 1
+        # number of breaches to wait for before scaling up
+        upscale_sensitivity: 1
+        # number of breaches to wait for before scaling down
+        downscale_sensitivity: 1
+      webapi:
+        ...
+    worker_services:
+      worker1:
+        min: 1
+        max: 10
+        # number of jobs each worker replica should process
+        # the bigger the ratio, the less number of workers scaled out
+        ratio: 3
+        upscale_sensitivity: 1
+        downscale_sensitivity: 1
+      worker2:
+        ...
+
+More details about configuration parameters can be found in [HireFire docs](https://help.hirefire.io/guides).
 
 ## Development
 
@@ -57,6 +111,13 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/hammady/scaltainer.
+
+## TODOs
+
+- Logging
+- Rake task
+- Rspec
+- Merge default config
 
 ## License
 

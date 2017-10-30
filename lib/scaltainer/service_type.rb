@@ -22,8 +22,25 @@ module Scaltainer
 
     def get_metrics(services)
       super
-      # TODO get from NR or whatever
-      {"web" => 400, "webapi" => 50, "nginx" => 50}
+      nr_key = ENV['NEW_RELIC_LICENSE_KEY']
+      raise ConfigurationError.new('NEW_RELIC_LICENSE_KEY not set in environment') unless nr_key
+      nr = Newrelic::Metrics.new nr_key
+      time_window = (ENV['RESPONSE_TIME_WINDOW'] || '5').to_i
+
+      services.reduce({}) do |hash, (service_name, service_config)|
+        app_id = service_config["newrelic_app_id"]
+        raise ConfigurationError.new("Service #{service_name} does not have a corresponding newrelic_app_id") unless app_id
+        to = Time.now
+        from = to - time_window * 60
+
+        begin
+          metric = nr.get_avg_response_time app_id, from, to
+        rescue => e
+          raise NetworkError.new("Could not retrieve metrics from New Relic API for #{service_name}\n#{e.message}")
+        end
+
+        hash.merge!(service_name => metric)
+      end
     end
 
     def determine_desired_replicas(metric, service_config, current_replicas)
@@ -45,7 +62,11 @@ module Scaltainer
 
     def get_metrics(services)
       super
-      response = Excon.get(@app_endpoint)
+      begin
+        response = Excon.get(@app_endpoint)
+      rescue => e
+        raise NetworkError.new("Could not retrieve metrics from application endpoint: #{@app_endpoint}\n#{e.message}")
+      end
       m = JSON.parse(response.body)
       m.reduce({}){|hash, item| hash.merge!({item["name"] => item["quantity"]})}
     end

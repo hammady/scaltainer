@@ -3,6 +3,7 @@ require "scaltainer/exceptions"
 require "scaltainer/service_type"
 require "docker"
 require "docker/service"
+require 'newrelic/metrics'
 require "yaml"
 require "logger"
 require "optparse"
@@ -50,7 +51,11 @@ module Scaltainer
     end
 
     def get_service(service_name)
+      begin
       service = Docker::Service.all(filters: {name: [service_name]}.to_json)[0]
+      rescue => e
+        raise NetworkError.new("Could not get service list from docker engine at #{Docker.url}\n#{e.message}")
+      end
       raise ConfigurationError.new("Unknown service to docker: #{service_name}") unless service
       service
     end
@@ -122,8 +127,13 @@ module Scaltainer
     def scale_out(service, current_replicas, desired_replicas)
       return if current_replicas == desired_replicas
       # send scale command to docker
-      puts "Scaling #{service.info['Spec']['Name']} from #{current_replicas} to #{desired_replicas}"
+      service_name = service.info['Spec']['Name']
+      puts "Scaling #{service_name} from #{current_replicas} to #{desired_replicas}"
+      begin
       service.scale desired_replicas
+      rescue => e
+        raise NetworkError.new("Could not scale service #{service_name} due to docker engine error at #{Docker.url}\n#{e.message}")
+      end
     end
 
   end
