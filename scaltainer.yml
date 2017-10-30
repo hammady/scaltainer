@@ -1,0 +1,10 @@
+web_services:
+  nginx:
+    min: 1
+    max: 100
+    max_response_time: 300
+    min_response_time: 100
+    upscale_quantity: 2
+    downscale_quantity: 3
+    upscale_sensitivity: 1
+    downscale_sensitivity: 2

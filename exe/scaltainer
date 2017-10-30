@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require 'scaltainer'
+
+begin
+  Scaltainer::Command.new(ARGV).run
+rescue => e
+  $stderr.puts e.message
+  $stderr.puts e.backtrace
+  exit 1
+end

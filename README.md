@@ -32,8 +32,8 @@ Configuration is read from `scaltainer.yml` by default. If you want to read from
 
     scaltainer -f yourconfig.yml
 
-Note that after each run a new file is created (`scaltainer-state.yml`) which stores the state of the previous run.
-This is because there are some configuration parameters (like timeout and sensitivity) need to
+Note that after each run a new file is created (`yourconfig.yml.state`) which stores the state of the previous run.
+This is because there are some configuration parameters (like sensitivity) need to
 remember previous runs.
 
 Typically, the above command should be put inside a cronjob that is triggered every minute or so.
@@ -41,6 +41,8 @@ Typically, the above command should be put inside a cronjob that is triggered ev
 ## Configuration
 
 Details of configuration parameters can be found in [HireFire docs](https://help.hirefire.io/guides).
+Set the environment variable `DOCKER_URL` to point to the docker engine URL.
+If not set, it defaults to local unix socket.
 
 ## Development
 
