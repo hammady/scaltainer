@@ -1,12 +1,12 @@
 module Scaltainer
   class ServiceType
     def initialize(app_endpoint)
-      @app_endpoint = app_endpoint
+      @app_endpoint = app_endpoint.sub('$HIREFIRE_TOKEN', ENV['HIREFIRE_TOKEN'] || '') if app_endpoint
     end
 
     def get_metrics(services)
       services_count = services.keys.length rescue 0
-      raise Warning.new('No services found for requested type') if services_count == 0
+      raise Warning.new("No services found for #{self.class.name}") if services_count == 0
     end
 
     def determine_desired_replicas(metric, service_config, current_replicas)
@@ -45,10 +45,9 @@ module Scaltainer
 
     def get_metrics(services)
       super
-      # TODO get current metrics from app endpoint
-      #@app_endpoint
-      m = [{:name=>"worker", :quantity=>10}, {:name=>"info_extractor", :quantity=>60}, {:name=>"sim_calculator", :quantity=>0}, {:name=>"prediction", :quantity=>2}, {:name=>"indexer", :quantity=>0}, {:name=>"long_indexer", :quantity=>1}, {:name=>"dedup", :quantity=>0}]
-      m.reduce({}){|hash, item| hash.merge!({item[:name] => item[:quantity]})}
+      response = Excon.get(@app_endpoint)
+      m = JSON.parse(response.body)
+      m.reduce({}){|hash, item| hash.merge!({item["name"] => item["quantity"]})}
     end
 
     def determine_desired_replicas(metric, service_config, current_replicas)

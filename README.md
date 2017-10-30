@@ -43,6 +43,11 @@ Details of configuration parameters can be found in [HireFire docs](https://help
 Set the environment variable `DOCKER_URL` to point to the docker engine URL.
 If not set, it defaults to local unix socket.
 
+If your application is configured the
+[hirefire](https://help.hirefire.io/guides/hirefire/job-queue-any-programming-language) way, you need to
+set `HIREFIRE_TOKEN` environment variable before invoking
+`scaltainer`.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
