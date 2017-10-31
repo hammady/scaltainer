@@ -8,11 +8,15 @@ module Scaltainer
       super
       begin
         response = Excon.get(@app_endpoint)
+        m = JSON.parse(response.body)
+        m.reduce({}){|hash, item| hash.merge!({item["name"] => item["quantity"]})}
+      rescue JSON::ParserError => e
+        raise ConfigurationError.new "app_endpoint returned non json response: #{response.body[0..128]}"
+      rescue TypeError => e
+        raise ConfigurationError.new "app_endpoint returned unexpected json response: #{response.body[0..128]}"
       rescue => e
         raise NetworkError.new "Could not retrieve metrics from application endpoint: #{@app_endpoint}.\n#{e.message}"
       end
-      m = JSON.parse(response.body)
-      m.reduce({}){|hash, item| hash.merge!({item["name"] => item["quantity"]})}
     end
 
     def determine_desired_replicas(metric, service_config, current_replicas)
