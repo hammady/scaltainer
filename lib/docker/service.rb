@@ -10,33 +10,9 @@ class Docker::Service
     hashes.map { |hash| new(conn, hash) }
   end
 
-  def self.get(id, opts = {}, conn = Docker.connection)
-    service_json = conn.get("/services/#{URI.encode(id)}", opts)
-    new(conn, Docker::Util.parse_json(service_json) || {})
-  end
-
-  def self.create(opts = {}, conn = Docker.connection)
-    name = opts.delete('name') || opts.delete(:name)
-    query = {}
-    query['name'] = name if name
-
-    response = conn.post('/services/create', query, :body => opts.to_json)
-    hash = Docker::Util.parse_json(response) || {}
-    new(conn, hash)
-  end
-  
-  def remove(opts = {})
-    connection.delete("/services/#{self.id}", opts)
-    nil
-  end
-
   def update(opts)
     version = self.info["Version"]["Index"]
     connection.post("/services/#{self.id}/update", {version: version}, body: opts.to_json)
-  end
-
-  def logs(opts = {})
-    connection.get("/services/#{self.id}/logs", opts)
   end
 
   def scale(replicas)
