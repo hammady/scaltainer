@@ -61,7 +61,7 @@ module Scaltainer
             @logger.debug "Service #{service_name} currently has state: #{service_state}"
             service_config = @default_service_config.merge service_config
             @logger.debug "Service #{service_name} configuration: #{service_config}"
-            process_service_logic service_name, service_config, service_state, service_prefix, type, metrics
+            process_service service_name, service_config, service_state, service_prefix, type, metrics
           rescue RuntimeError => e
             # skipping service
             log_exception e
@@ -77,7 +77,7 @@ module Scaltainer
       @logger.log (e.class == Warning ? Logger::WARN : Logger::ERROR), e.message
     end
 
-    def process_service_logic(service_name, config, state, prefix, type, metrics)
+    def process_service(service_name, config, state, prefix, type, metrics)
       full_service_name = prefix ? "#{prefix}_#{service_name}" : service_name
       service = get_service full_service_name
       @logger.debug "Found service at docker with name '#{service_name}' and id '#{service.id}'"
@@ -87,42 +87,11 @@ module Scaltainer
       raise Warning.new("Configured service '#{service_name}' not found in metrics endpoint") unless metric
       desired_replicas = type.determine_desired_replicas metric, config, current_replicas
       @logger.debug "Desired number of replicas for service #{service_name} is #{desired_replicas}"
-      desired_replicas = [config["max"], desired_replicas].min if config["max"]
-      desired_replicas = [config["min"], desired_replicas].max
-      @logger.debug "Desired number of replicas for service #{service_name} is bounded to #{desired_replicas}"
-      diff = desired_replicas - current_replicas
-      if diff > 0
-        # breach: change state and scale up
-        state["upscale_sensitivity"] ||= 0
-        state["upscale_sensitivity"] += 1
-        state["downscale_sensitivity"] = 0
-        if state["upscale_sensitivity"] >= config["upscale_sensitivity"]
-          scale_out service, current_replicas, desired_replicas
-          state["upscale_sensitivity"] = 0
-        else
-          @logger.debug "Scaling up of service #{service_name} blocked by upscale_sensitivity at level " +
-            "#{state["upscale_sensitivity"]} while level #{config["upscale_sensitivity"]} is required"
+
+      type.adjust_desired_replicas(desired_replicas, current_replicas, config, state, 
+        metric, service_name, @logger) do |adjusted_replicas|
+          scale_out service, current_replicas, adjusted_replicas
         end
-      elsif diff < 0
-        # breach: change state and scale down
-        if type.class == ServiceTypeWeb || metric == 0 || config["decrementable"]
-          state["downscale_sensitivity"] ||= 0
-          state["downscale_sensitivity"] += 1
-          state["upscale_sensitivity"] = 0
-          if state["downscale_sensitivity"] >= config["downscale_sensitivity"]
-            scale_out service, current_replicas, desired_replicas
-            state["downscale_sensitivity"] = 0
-          else
-            @logger.debug "Scaling down of service #{service_name} blocked by downscale_sensitivity at level " +
-              "#{state["downscale_sensitivity"]} while level #{config["downscale_sensitivity"]} is required"
-          end
-        end
-      else
-        # no breach, change state
-        state["upscale_sensitivity"] = 0
-        state["downscale_sensitivity"] = 0
-        @logger.info "No need to scale service #{service_name}"
-      end
     end
 
     def scale_out(service, current_replicas, desired_replicas)
