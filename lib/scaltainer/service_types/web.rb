@@ -1,25 +1,5 @@
 module Scaltainer
-  class ServiceType
-    def initialize(app_endpoint)
-      @app_endpoint = app_endpoint.sub('$HIREFIRE_TOKEN', ENV['HIREFIRE_TOKEN'] || '') if app_endpoint
-    end
-
-    def get_metrics(services)
-      services_count = services.keys.length rescue 0
-      raise Warning.new "No services found for #{self.class.name}" if services_count == 0
-    end
-
-    def determine_desired_replicas(metric, service_config, current_replicas)
-      raise ConfigurationError.new 'No metric found for requested service' unless metric
-      raise ConfigurationError.new 'No configuration found for requested service' unless service_config
-    end
-
-    def to_s
-      "Abstract"
-    end
-  end
-
-  class ServiceTypeWeb < ServiceType
+  class ServiceTypeWeb < ServiceTypeBase
     def initialize(app_endpoint = nil)
       super
     end
@@ -64,32 +44,4 @@ module Scaltainer
       "Web"
     end
   end
-
-  class ServiceTypeWorker < ServiceType
-    def initialize(app_endpoint = nil)
-      super
-    end
-
-    def get_metrics(services)
-      super
-      begin
-        response = Excon.get(@app_endpoint)
-      rescue => e
-        raise NetworkError.new "Could not retrieve metrics from application endpoint: #{@app_endpoint}.\n#{e.message}"
-      end
-      m = JSON.parse(response.body)
-      m.reduce({}){|hash, item| hash.merge!({item["name"] => item["quantity"]})}
-    end
-
-    def determine_desired_replicas(metric, service_config, current_replicas)
-      super
-      raise ConfigurationError.new "Missing ratio in worker service configuration" unless service_config["ratio"]
-      desired_replicas = (metric * 1.0 / service_config["ratio"]).ceil
-    end
-
-    def to_s
-      "Worker"
-    end
-  end
 end
-

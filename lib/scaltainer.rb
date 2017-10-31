@@ -1,6 +1,6 @@
 require "scaltainer/version"
 require "scaltainer/exceptions"
-require "scaltainer/service_type"
+require "scaltainer/service_types"
 require "docker"
 require "docker/service"
 require 'newrelic/metrics'
