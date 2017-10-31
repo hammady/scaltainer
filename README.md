@@ -57,6 +57,9 @@ More monitoring services can be added in the future.
 average response time till the moment. For example 3 means
 measure average response time in the past 3 minutes. Default value is 5.
 
+- `LOG_LEVEL`: Accepted values here are: `DEBUG`, `INFO` (default), `WARN`, `ERROR`, `FATAL`.
+Log output goes to stdout.
+
 ### Configuration file
 
 The configuration file (determined by `-f FILE` command line parameter) should be in the following form:
@@ -115,7 +118,6 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/hammad
 
 ## TODOs
 
-- Logging
 - Rspec
 
 ## License
