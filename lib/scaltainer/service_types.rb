@@ -1,3 +1,3 @@
-require_relative "./service_types/base"
-require_relative "./service_types/web"
-require_relative "./service_types/worker"
+require "scaltainer/service_types/base"
+require "scaltainer/service_types/web"
+require "scaltainer/service_types/worker"
