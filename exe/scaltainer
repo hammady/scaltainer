@@ -3,7 +3,8 @@
 require 'scaltainer'
 
 begin
-  Scaltainer::Command.new(ARGV).run
+  configfile, logger = Scaltainer::Command.parse ARGV
+  Scaltainer::Runner.new configfile, logger
 rescue => e
   $stderr.puts e.message
   $stderr.puts e.backtrace

@@ -2,6 +2,8 @@
 
 # This class represents a Docker Service. It's important to note that nothing
 # is cached so that the information is always up to date.
+require "docker"
+
 class Docker::Service
   include Docker::Base
 
