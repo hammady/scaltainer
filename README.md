@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/hammady/scaltainer.svg?branch=master)](https://travis-ci.org/hammady/scaltainer)
+[![Coverage Status](https://coveralls.io/repos/github/hammady/scaltainer/badge.svg?branch=master)](https://coveralls.io/github/hammady/scaltainer?branch=master)
+
 # Scaltainer
 
 A Ruby gem to monitor docker swarm mode services and auto-scale them based on user configuration.
