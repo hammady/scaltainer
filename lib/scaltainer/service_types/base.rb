@@ -6,7 +6,7 @@ module Scaltainer
 
     def get_metrics(services)
       services_count = services.keys.length rescue 0
-      raise Warning.new "No services found for #{self.class.name}" if services_count == 0
+      raise Scaltainer::Warning.new "No services found for #{self.class.name}" if services_count == 0
     end
 
     def determine_desired_replicas(metric, service_config, current_replicas)

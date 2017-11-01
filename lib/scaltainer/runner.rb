@@ -74,7 +74,7 @@ module Scaltainer
     end
 
     def log_exception(e)
-      @logger.log (e.class == Warning ? Logger::WARN : Logger::ERROR), e.message
+      @logger.log (e.class == Scaltainer::Warning ? Logger::WARN : Logger::ERROR), e.message
     end
 
     def process_service(service_name, config, state, prefix, type, metrics)
@@ -84,7 +84,7 @@ module Scaltainer
       current_replicas = get_service_replicas service
       @logger.debug "Service #{service_name} is currently configured for #{current_replicas} replica(s)"
       metric = metrics[service_name]
-      raise Warning.new("Configured service '#{service_name}' not found in metrics endpoint") unless metric
+      raise Scaltainer::Warning.new("Configured service '#{service_name}' not found in metrics endpoint") unless metric
       desired_replicas = type.determine_desired_replicas metric, config, current_replicas
       @logger.debug "Desired number of replicas for service #{service_name} is #{desired_replicas}"
 

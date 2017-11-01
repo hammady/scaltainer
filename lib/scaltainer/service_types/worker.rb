@@ -22,7 +22,7 @@ module Scaltainer
     def determine_desired_replicas(metric, service_config, current_replicas)
       super
       raise ConfigurationError.new "Missing ratio in worker service configuration" unless service_config["ratio"]
-      if !metric.is_a?(Fixnum) || metric < 0
+      if !metric.is_a?(Integer) || metric < 0
         raise ConfigurationError.new "#{metric} is an invalid metric value, must be a non-negative number" 
       end
       desired_replicas = (metric * 1.0 / service_config["ratio"]).ceil
