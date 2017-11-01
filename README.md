@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/hammady/scaltainer.svg?branch=master)](https://travis-ci.org/hammady/scaltainer)
-[![Coverage Status](https://coveralls.io/repos/github/hammady/scaltainer/badge.svg?branch=master)](https://coveralls.io/github/hammady/scaltainer?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/hammady/scaltainer/badge.svg?service=github&branch=master)](https://coveralls.io/github/hammady/scaltainer?branch=master)
 
 # Scaltainer
 
