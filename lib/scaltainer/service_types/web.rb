@@ -21,7 +21,7 @@ module Scaltainer
         rescue => e
           raise NetworkError.new "Could not retrieve metrics from New Relic API for #{service_name}.\n#{e.message}"
         end
-        
+
         hash.merge!(service_name => metric)
       end
     end
@@ -30,6 +30,9 @@ module Scaltainer
       super
       raise ConfigurationError.new "Missing max_response_time in web service configuration" unless service_config["max_response_time"]
       raise ConfigurationError.new "Missing min_response_time in web service configuration" unless service_config["min_response_time"]
+      unless service_config["min_response_time"] <= service_config["max_response_time"]
+        raise ConfigurationError.new "min_response_time and max_response_time are not in order"
+      end
       desired_replicas = if metric > service_config["max_response_time"]
         current_replicas + service_config["upscale_quantity"]
       elsif metric < service_config["min_response_time"]

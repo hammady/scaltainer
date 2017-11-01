@@ -3,14 +3,13 @@ require 'spec_helper'
 include Scaltainer
 
 describe ServiceTypeWeb do
+  let(:web_type) { ServiceTypeWeb.new }
+
   describe '#get_metrics' do
-    let(:web_type) { ServiceTypeWeb.new }
-    let(:services) { 
-      {
-        "w1" => {"newrelic_app_id" => 'id1'},
-        "w2" => {"newrelic_app_id" => 'id2'}
-      }
-    }
+    let(:services) { {
+      "w1" => {"newrelic_app_id" => 'id1'},
+      "w2" => {"newrelic_app_id" => 'id2'}
+    } }
 
     before {
       allow(ENV).to receive(:[]).with("RESPONSE_TIME_WINDOW").and_return(nil)
@@ -83,7 +82,60 @@ describe ServiceTypeWeb do
   end # describe #get_metrics
 
   describe '#determine_desired_replicas' do
-    it 'is pending'
+    context 'when max_response_time is missing in config' do
+      let(:config) { {"min_response_time" => 0} }
+
+      it 'raises ConfigurationError' do
+        expect{web_type.determine_desired_replicas(0, config, nil)}.to \
+          raise_exception ConfigurationError, /Missing max_response_time/
+      end
+    end
+
+    context 'when min_response_time is missing in config' do
+      let(:config) { {"max_response_time" => 0} }
+
+      it 'raises ConfigurationError' do
+        expect{web_type.determine_desired_replicas(0, config, nil)}.to \
+          raise_exception ConfigurationError, /Missing min_response_time/
+      end
+    end
+
+    context 'when min_response_time and max_response_time are not in order' do
+      let(:config) { {"min_response_time" => 100, "max_response_time" => 50} }
+
+      it 'raises ConfigurationError' do
+        expect{web_type.determine_desired_replicas(0, config, nil)}.to \
+          raise_exception ConfigurationError, /are not in order/
+      end
+    end
+
+    context 'when config is ok' do
+      let(:config) { {
+        "min_response_time" => 50,
+        "max_response_time" => 100,
+        "upscale_quantity" => 2,
+        "downscale_quantity" => 3
+      } }
+
+      context 'metric is above max_response_time' do
+        it 'increases current replicas by upscale quantity' do
+          expect(web_type.determine_desired_replicas(200, config, 5)).to eq 7
+        end
+      end
+
+      context 'metric is below min_response_time' do
+        it 'decreases current replicas by downscale quantity' do
+          expect(web_type.determine_desired_replicas(30, config, 5)).to eq 2
+          # it is ok to return a negative number, will be bounded later
+        end          
+      end
+
+      context 'metric is between min_response_time and max_response_time' do
+        it 'does not change current replicas' do
+          expect(web_type.determine_desired_replicas(75, config, 5)).to eq 5
+        end
+      end
+    end
   end # describe #determine_desired_replicas
 
   describe '#to_s' do
