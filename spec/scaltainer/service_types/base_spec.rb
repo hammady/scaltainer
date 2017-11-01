@@ -109,6 +109,100 @@ describe ServiceTypeBase do
   end # describe #determine_desired_replicas
 
   describe '#adjust_desired_replicas' do
-    it 'is pending'
+    context 'when desired_replicas below min' do
+      it 'adjusts desired_replicas to min' do
+        expect(base_type.adjust_desired_replicas(0, {"min" => 1})).to \
+          eq 1
+      end
+    end
+
+    context 'when desired_replicas above max' do
+      it 'adjusts desired_replicas to max' do
+        expect(base_type.adjust_desired_replicas(15, {"max" => 10, "min" => 0})).to \
+          eq 10
+      end
+    end
+
+    context 'when no max configured' do
+      it 'does not change desired_replicas' do
+        expect(base_type.adjust_desired_replicas(99999, {"min" => 0})).to \
+          eq 99999
+      end
+    end
+
+    context 'when desired_replicas between min and max' do
+      it 'does not change desired_replicas' do
+        expect(base_type.adjust_desired_replicas(5, {"max" => 10, "min" => 0})).to \
+          eq 5
+      end
+    end
   end # describe #adjust_desired_replicas
+
+  describe '#yield_to_scale' do
+    context 'when scaling up' do
+      it 'increments upscale sensitivity level and resets downscale sensitivity level'
+
+      context 'when reached required upscale sensitivity level' do
+        it 'yields to scale and resets upscale sensitivity level'
+      end
+
+      context 'when blocked by lower upscale sensitivity level' do
+        it 'does not yield'
+        
+        it 'logs a debug message'
+      end
+    end
+
+    context 'when scaling down' do
+      context 'when can scale down' do
+        it 'increments downscale sensitivity level and resets upscale sensitivity level'
+
+        context 'when reached required downscale sensitivity level' do
+          it 'yields to scale and resets downscale sensitivity level'
+        end
+
+        context 'when blocked by lower downscale sensitivity level' do
+          it 'does not yield'
+          
+          it 'logs a debug message'
+        end
+      end
+
+      context 'when cannot scale down' do
+        it 'does not change sensitivity levels'
+
+        it 'logs a debug message'
+      end
+    end
+
+    context 'when not scaling' do
+      it 'resets both sensitivity levels'
+
+      it 'logs an info message'
+    end
+  end # describe #yield_to_scale
+
+  describe '#can_scale_down' do
+    context 'when of type web' do
+      it 'returns true'
+    end
+
+    context 'when scaling down to 0' do
+      it 'returns true'
+    end
+
+    context 'when service is decrementable in config' do
+      it 'returns true'
+    end
+
+    context 'when not of type Web and not scaling to 0 and not decrementable' do
+      it 'returns false'
+    end
+  end # describe #can_scale_down
+
+  describe '#to_s' do
+    it 'returns a human readable string' do
+      expect("#{ServiceTypeBase.new(nil)}").to eq "Base"
+    end
+  end # describe #to_s
 end # describe ServiceTypeBase

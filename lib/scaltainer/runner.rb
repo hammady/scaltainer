@@ -87,9 +87,11 @@ module Scaltainer
       raise Scaltainer::Warning.new("Configured service '#{service_name}' not found in metrics endpoint") unless metric
       desired_replicas = type.determine_desired_replicas metric, config, current_replicas
       @logger.debug "Desired number of replicas for service #{service_name} is #{desired_replicas}"
-
-      type.adjust_desired_replicas(desired_replicas, current_replicas, config, state, 
-        metric, service_name, @logger) do |adjusted_replicas|
+      adjusted_replicas = type.adjust_desired_replicas(desired_replicas, config)
+      @logger.debug "Desired number of replicas for service #{service_name} is adjusted to #{adjusted_replicas}"
+      replica_diff = desired_replicas - current_replicas
+      type.yield_to_scale(replica_diff, config, state, metric,
+        service_name, @logger) do
           scale_out service, current_replicas, adjusted_replicas
         end
     end
