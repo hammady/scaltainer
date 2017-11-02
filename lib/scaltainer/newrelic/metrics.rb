@@ -8,28 +8,33 @@ module Newrelic
     # https://docs.newrelic.com/docs/apis/rest-api-v2/application-examples-v2/average-response-time-examples-v2
     def get_avg_response_time(app_id, from, to)
       url = "#{@base_url}/applications/#{app_id}/metrics/data.json"
-      conn = Excon.new(url)
+      conn = Excon.new(url, persistent: true, tcp_nodelay: true)
       time_range = "from=#{from.iso8601}&to=#{to.iso8601}"
+      metric_names_array = %w(
+        names[]=HttpDispatcher&values[]=average_call_time&values[]=call_count
+        names[]=WebFrontend/QueueTime&values[]=call_count&values[]=average_response_time
+      )
+      response_array = request(conn, metric_names_array, time_range)
+      http_call_count, http_average_call_time = response_array[0]["call_count"], response_array[0]["average_call_time"]
+      webfe_call_count, webfe_average_response_time = response_array[1]["call_count"], response_array[1]["average_response_time"]
 
-      metric_names = "names[]=HttpDispatcher&values[]=average_call_time&values[]=call_count"
-      response = request(conn, metric_names, time_range)
-      http_call_count, http_average_call_time = response["call_count"], response["average_call_time"]
-
-      metric_names = "names[]=WebFrontend/QueueTime&values[]=call_count&values[]=average_response_time"
-      response = request(conn, metric_names, time_range)
-      webfe_call_count, webfe_average_response_time = response["call_count"], response["average_response_time"]
-
-      (http_average_call_time + (1.0 * webfe_call_count * webfe_average_response_time / http_call_count)).round
+      http_average_call_time + (1.0 * webfe_call_count * webfe_average_response_time / http_call_count)
     end
 
   private
 
-    def request(conn, metric_names, time_range)
-      response = conn.get(headers: @headers, 
-        query: "#{metric_names}&#{time_range}&summarize=true",
-        tcp_nodelay: true)
-      body = JSON.parse(response.body)
-      body["metric_data"]["metrics"][0]["timeslices"][0]["values"]
+    def request(conn, metric_names_array, time_range)
+      requests = metric_names_array.map {|metric_names|
+        {
+          method: :get, headers: @headers, 
+          query: "#{metric_names}&#{time_range}&summarize=true"
+        }
+      }
+      responses = conn.requests requests
+      responses.map {|response|
+        body = JSON.parse(response.body)
+        body["metric_data"]["metrics"][0]["timeslices"][0]["values"]
+      }
     end
 
   end

@@ -135,6 +135,13 @@ describe ServiceTypeWeb do
           expect(web_type.determine_desired_replicas(75, config, 5)).to eq 5
         end
       end
+
+      context 'metric is NaN' do
+        it 'does not change current replicas' do
+          # this happens when app is idle, call_count = 0
+          expect(web_type.determine_desired_replicas(0.0/0, config, 5)).to eq 5
+        end
+      end
     end
   end # describe #determine_desired_replicas
 
