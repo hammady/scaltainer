@@ -148,7 +148,7 @@ describe ServiceTypeBase do
 
       context 'when blocked by lower upscale sensitivity level' do
         it 'does not yield'
-        
+
         it 'logs a debug message'
       end
     end
@@ -182,21 +182,32 @@ describe ServiceTypeBase do
     end
   end # describe #yield_to_scale
 
-  describe '#can_scale_down' do
+  describe '#can_scale_down?' do
+    let(:worker_type) { ServiceTypeWorker.new }
+    let(:web_type) { ServiceTypeWeb.new }
+
     context 'when of type web' do
-      it 'returns true'
+      it 'returns true' do
+        expect(web_type.send(:can_scale_down?, 10, {})).to be true
+      end
     end
 
     context 'when scaling down to 0' do
-      it 'returns true'
+      it 'returns true' do
+        expect(worker_type.send(:can_scale_down?, 0, {})).to be true
+      end
     end
 
     context 'when service is decrementable in config' do
-      it 'returns true'
+      it 'returns true' do
+        expect(worker_type.send(:can_scale_down?, 10, {"decrementable" => true})).to be true
+      end
     end
 
     context 'when not of type Web and not scaling to 0 and not decrementable' do
-      it 'returns false'
+      it 'returns false' do
+        expect(worker_type.send(:can_scale_down?, 10, {})).not_to be true
+      end
     end
   end # describe #can_scale_down
 

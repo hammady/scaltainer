@@ -37,7 +37,7 @@ module Scaltainer
         end
       elsif replica_diff < 0  # TODO force down when above max?
         # breach: change state and scale down
-        if can_scale_down metric, config
+        if can_scale_down? metric, config
           state["downscale_sensitivity"] ||= 0
           state["downscale_sensitivity"] += 1
           state["upscale_sensitivity"] = 0
@@ -65,7 +65,7 @@ module Scaltainer
 
     private
 
-    def can_scale_down(metric, config)
+    def can_scale_down?(metric, config)
       self.class == ServiceTypeWeb || metric == 0 || config["decrementable"]
     end
   end
