@@ -49,7 +49,7 @@ module Scaltainer
               "#{state["downscale_sensitivity"]} while level #{config["downscale_sensitivity"]} is required"
           end
         else
-          logger.debug "Scaling down of service #{service_name} to #{metric} replicas blocked by a non-decrementable non-web config"
+          logger.debug "Scaling down of service #{service_name} to #{metric} replicas blocked by a non-decrementable config"
         end
       else
         # no breach, change state

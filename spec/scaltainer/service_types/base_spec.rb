@@ -139,46 +139,151 @@ describe ServiceTypeBase do
   end # describe #adjust_desired_replicas
 
   describe '#yield_to_scale' do
+    let(:logger) { double(Logger) }
+
+    before {
+      allow(logger).to receive(:debug)
+      allow(logger).to receive(:info)
+    }
+
     context 'when scaling up' do
-      it 'increments upscale sensitivity level and resets downscale sensitivity level'
+      let(:diff) { 1 }
+      let(:config) { {"upscale_sensitivity" => 3} }
+      let(:state) { {"upscale_sensitivity" => 1} }
+
+      it 'increments upscale sensitivity level' do
+        expect{base_type.yield_to_scale(diff, config, state, nil, nil, logger){}}.to \
+          change{state["upscale_sensitivity"]}.by(1)
+      end
+
+      it 'resets downscale sensitivity level' do
+        expect{base_type.yield_to_scale(diff, config, state, nil, nil, logger){}}.to \
+          change{state["downscale_sensitivity"]}.to(0)
+      end
 
       context 'when reached required upscale sensitivity level' do
-        it 'yields to scale and resets upscale sensitivity level'
+        let(:config) { {"upscale_sensitivity" => 3} }
+        let(:state) { {"upscale_sensitivity" => 2} }
+
+        it 'yields to scale' do
+          expect{|b| base_type.yield_to_scale(diff, config, state, nil, nil, logger, &b)}.to \
+            yield_control
+        end
+
+        it 'resets upscale sensitivity level' do
+          expect{base_type.yield_to_scale(diff, config, state, nil, nil, logger){}}.to \
+            change{state["upscale_sensitivity"]}.to(0)
+        end
       end
 
       context 'when blocked by lower upscale sensitivity level' do
-        it 'does not yield'
+        let(:config) { {"upscale_sensitivity" => 3} }
+        let(:state) { {"upscale_sensitivity" => 1} }
 
-        it 'logs a debug message'
+        it 'does not yield' do
+          expect{|b| base_type.yield_to_scale(diff, config, state, nil, nil, logger, &b)}.not_to \
+            yield_control
+        end
+
+        it 'logs a debug message' do
+          expect(logger).to receive(:debug).with(/blocked by upscale_sensitivity/)
+          base_type.yield_to_scale(diff, config, state, nil, nil, logger)
+        end
       end
     end
 
     context 'when scaling down' do
+      let(:diff) { -1 }
+      let(:metric) { 5 }
+      let(:config) { {} }
+
       context 'when can scale down' do
-        it 'increments downscale sensitivity level and resets upscale sensitivity level'
+        let(:config) { {"downscale_sensitivity" => 3} }
+        let(:state) { {"downscale_sensitivity" => 1} }
+
+        before {
+          allow(base_type).to receive(:can_scale_down?).with(metric, config){ true }
+        }
+
+        it 'increments downscale sensitivity level' do
+          expect{base_type.yield_to_scale(diff, config, state, metric, nil, logger){}}.to \
+            change{state["downscale_sensitivity"]}.by(1)
+        end
+
+        it 'resets upscale sensitivity level' do
+          expect{base_type.yield_to_scale(diff, config, state, metric, nil, logger){}}.to \
+            change{state["upscale_sensitivity"]}.to(0)
+        end
 
         context 'when reached required downscale sensitivity level' do
-          it 'yields to scale and resets downscale sensitivity level'
+          let(:config) { {"downscale_sensitivity" => 3} }
+          let(:state) { {"downscale_sensitivity" => 2} }
+
+          it 'yields to scale' do
+            expect{|b| base_type.yield_to_scale(diff, config, state, metric, nil, logger, &b)}.to \
+              yield_control
+          end
+
+          it 'resets downscale sensitivity level' do
+            expect{base_type.yield_to_scale(diff, config, state, metric, nil, logger){}}.to \
+              change{state["downscale_sensitivity"]}.to(0)
+          end
         end
 
         context 'when blocked by lower downscale sensitivity level' do
-          it 'does not yield'
-          
-          it 'logs a debug message'
+          let(:config) { {"downscale_sensitivity" => 3} }
+          let(:state) { {"downscale_sensitivity" => 1} }
+
+          it 'does not yield' do
+            expect{|b| base_type.yield_to_scale(diff, config, state, metric, nil, logger, &b)}.not_to \
+              yield_control
+          end
+
+          it 'logs a debug message' do
+            expect(logger).to receive(:debug).with(/blocked by downscale_sensitivity/)
+            base_type.yield_to_scale(diff, config, state, metric, nil, logger)
+          end
         end
       end
 
       context 'when cannot scale down' do
-        it 'does not change sensitivity levels'
+        let(:state) { {"upscale_sensitivity" => 2, "downscale_sensitivity" => 3} }
 
-        it 'logs a debug message'
+        before {
+          allow(base_type).to receive(:can_scale_down?).with(metric, config){ nil }
+        }
+
+        it 'does not change upscale_sensitivity level' do
+          expect{base_type.yield_to_scale(diff, config, state, metric, nil, logger)}.not_to \
+            change{state["upscale_sensitivity"]}
+        end
+
+        it 'does not change downscale_sensitivity level' do
+          expect{base_type.yield_to_scale(diff, config, state, metric, nil, logger)}.not_to \
+            change{state["downscale_sensitivity"]}
+        end
+
+        it 'logs a debug message' do
+          expect(logger).to receive(:debug).with(/blocked by a non-decrementable/)
+          base_type.yield_to_scale(diff, config, state, metric, nil, logger)
+        end
       end
     end
 
     context 'when not scaling' do
-      it 'resets both sensitivity levels'
+      let(:diff) { 0 }
+      let(:state) { {"upscale_sensitivity" => 2, "downscale_sensitivity" => 3} }
 
-      it 'logs an info message'
+      it 'resets both sensitivity levels' do
+        expect{base_type.yield_to_scale(diff, nil, state, nil, nil, logger)}.to \
+          change{state["upscale_sensitivity"]}.to(0).and \
+          change{state["downscale_sensitivity"]}.to(0)
+      end
+
+      it 'logs an info message' do
+        expect(logger).to receive(:info).with(/No need to scale/)
+        base_type.yield_to_scale(diff, nil, state, nil, nil, logger)
+      end
     end
   end # describe #yield_to_scale
 
