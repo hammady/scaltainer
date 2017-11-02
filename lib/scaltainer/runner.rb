@@ -2,7 +2,7 @@ require "yaml"
 
 module Scaltainer
   class Runner
-    def initialize(configfile, logger)
+    def initialize(configfile, statefile, logger)
       @logger = logger
       @default_service_config = {
         "min" => 0,
@@ -11,11 +11,10 @@ module Scaltainer
         "upscale_sensitivity" => 1,
         "downscale_sensitivity" => 1
       }
-      @logger.debug "Scaltainer initialized with configuration file: #{configfile}"
+      @logger.debug "Scaltainer initialized with configuration file: #{configfile}, and state file: #{statefile}"
       config = YAML.load_file configfile
       Docker.logger = @logger
-      statefile = "#{configfile}.state"
-      state = get_state statefile || {}
+      state = get_state(statefile) || {}
       endpoint = config["endpoint"]
       service_prefix = config["stack_name"]
       iterate_services config["web_services"], service_prefix, ServiceTypeWeb.new(endpoint), state

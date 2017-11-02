@@ -8,7 +8,7 @@ It can be used to monitor web services and worker services. The web services typ
 This gem is inspired by [HireFire](https://manager.hirefire.io/) and was indeed motivated by the migration
 from [Heroku](https://www.heroku.com/) to Docker Swarm mode.
 
-## Installation (not published yet to rubygems)
+## Installation
 
 Add this line to your application's Gemfile:
 
@@ -36,6 +36,10 @@ Configuration is read from `scaltainer.yml` by default. If you want to read from
 Note that after each run a new file is created (`yourconfig.yml.state`) which stores the state of the previous run.
 This is because there are some configuration parameters (like sensitivity) need to
 remember previous runs.
+If you want to specify a different location for the state file, add the `--state-file` parameter.
+Example:
+
+    scaltainer -f /path/to/configuration/file.yml --state-file /path/to/different/state/file.yml
 
 Typically, the above command should be put inside a cronjob that is triggered every minute or so.
 
@@ -56,6 +60,7 @@ for each worker.
 - `NEW_RELIC_LICENSE_KEY`: New Relic license key. Currently New Relic
 is used to retrieve average response time metric for web services.
 More monitoring services can be added in the future.
+
 - `RESPONSE_TIME_WINDOW`: Time window in minutes to measure
 average response time till the moment. For example 3 means
 measure average response time in the past 3 minutes. Default value is 5.
