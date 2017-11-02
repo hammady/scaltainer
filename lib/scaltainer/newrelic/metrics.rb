@@ -19,13 +19,15 @@ module Newrelic
       response = request(conn, metric_names, time_range)
       webfe_call_count, webfe_average_response_time = response["call_count"], response["average_response_time"]
 
-      http_average_call_time + (1.0 * webfe_call_count * webfe_average_response_time / http_call_count)
+      (http_average_call_time + (1.0 * webfe_call_count * webfe_average_response_time / http_call_count)).round
     end
 
   private
 
     def request(conn, metric_names, time_range)
-      response = conn.get(headers: @headers, query: "#{metric_names}&#{time_range}&summarize=true")
+      response = conn.get(headers: @headers, 
+        query: "#{metric_names}&#{time_range}&summarize=true",
+        tcp_nodelay: true)
       body = JSON.parse(response.body)
       body["metric_data"]["metrics"][0]["timeslices"][0]["values"]
     end
