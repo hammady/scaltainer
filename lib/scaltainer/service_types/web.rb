@@ -19,7 +19,7 @@ module Scaltainer
         begin
           metric = nr.get_avg_response_time app_id, from, to
         rescue => e
-          raise NetworkError.new "Could not retrieve metrics from New Relic API for #{service_name}.\n#{e.message}"
+          raise NetworkError.new "Could not retrieve metrics from New Relic API for #{service_name}: #{e.message}"
         end
 
         hash.merge!(service_name => metric)

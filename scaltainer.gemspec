@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'excon', '>= 0.47.0'
   spec.add_runtime_dependency "docker-api"
+  spec.add_runtime_dependency "dotenv"
 end

@@ -18,7 +18,7 @@ module Newrelic
       http_call_count, http_average_call_time = response_array[0]["call_count"], response_array[0]["average_call_time"]
       webfe_call_count, webfe_average_response_time = response_array[1]["call_count"], response_array[1]["average_response_time"]
 
-      http_average_call_time + (1.0 * webfe_call_count * webfe_average_response_time / http_call_count)
+      http_average_call_time + (1.0 * webfe_call_count * webfe_average_response_time / http_call_count) rescue 0.0/0
     end
 
   private
@@ -33,9 +33,12 @@ module Newrelic
       responses = conn.requests requests
       responses.map {|response|
         body = JSON.parse(response.body)
-        body["metric_data"]["metrics"][0]["timeslices"][0]["values"]
+        if body["error"] && body["error"]["title"]
+          raise body["error"]["title"]
+        else
+          body["metric_data"]["metrics"][0]["timeslices"][0]["values"] rescue {}
+        end
       }
     end
-
   end
 end

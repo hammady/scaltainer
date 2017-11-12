@@ -15,6 +15,13 @@ module Scaltainer
         end
         opts.on_tail("-h", "--help", "Show this message") do
           puts opts
+          puts "\nEnvironment variables: \n"
+          puts "- DOCKER_URL: defaults to local socket"
+          puts "- HIREFIRE_TOKEN"
+          puts "- NEW_RELIC_LICENSE_KEY"
+          puts "- RESPONSE_TIME_WINDOW: defaults to 5"
+          puts "- LOG_LEVEL: defaults to INFO"
+          puts "- DOCKER_SECRETS_PATH_GLOB: path glob containing env files to load"
           exit
         end     
       end.parse!
@@ -22,10 +29,28 @@ module Scaltainer
       statefile = "#{configfile}.state" unless statefile
 
       raise ConfigurationError.new("File not found: #{configfile}") unless File.exists?(configfile)
+
+      load_env
+
       logger = Logger.new(STDOUT)
       logger.level = %w(debug info warn error fatal unknown).find_index((ENV['LOG_LEVEL'] || '').downcase) || 1
 
       return configfile, statefile, logger
+    end
+
+    private
+
+    def self.load_env
+      # load docker configs/secrets
+      path = ENV['DOCKER_SECRETS_PATH_GLOB']
+      unless path.nil?
+        files = Dir[path]
+        unless files.empty?
+          require 'dotenv'
+          Dotenv.load(*files)
+          puts ENV['NEW_RELIC_LICENSE_KEY']
+        end
+      end
     end
   end
 end

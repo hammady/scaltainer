@@ -68,6 +68,12 @@ measure average response time in the past 3 minutes. Default value is 5.
 - `LOG_LEVEL`: Accepted values here are: `DEBUG`, `INFO` (default), `WARN`, `ERROR`, `FATAL`.
 Log output goes to stdout.
 
+- `DOCKER_SECRETS_PATH_GLOB`: Path glob containing environment files to load.
+This is useful if running from a docker swarm mode environment where one or more of the above
+environment variables are set using `docker config` or `docker secret`.
+These files should be in the form `VARIABLE=value`.
+A typical value of this variable would be: `{/run/secrets/*,/config1,/config2}`
+
 ### Configuration file
 
 The configuration file (determined by `-f FILE` command line parameter) should be in the following form:
