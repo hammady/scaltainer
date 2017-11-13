@@ -6,8 +6,8 @@ module Scaltainer
 
     def get_metrics(services)
       super
-      nr_key = ENV['NEW_RELIC_LICENSE_KEY']
-      raise ConfigurationError.new 'NEW_RELIC_LICENSE_KEY not set in environment' unless nr_key
+      nr_key = ENV['NEW_RELIC_API_KEY']
+      raise ConfigurationError.new 'NEW_RELIC_API_KEY not set in environment' unless nr_key
       nr = Newrelic::Metrics.new nr_key
       to = Time.now
       from = to - (ENV['RESPONSE_TIME_WINDOW'] || '5').to_i * 60

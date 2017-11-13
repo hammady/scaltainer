@@ -15,22 +15,22 @@ describe ServiceTypeWeb do
       allow(ENV).to receive(:[]).with("RESPONSE_TIME_WINDOW").and_return(nil)
     }
 
-    context 'when NEW_RELIC_LICENSE_KEY is missing' do
+    context 'when NEW_RELIC_API_KEY is missing' do
       before {
-        allow(ENV).to receive(:[]).with("NEW_RELIC_LICENSE_KEY").and_return(nil)
+        allow(ENV).to receive(:[]).with("NEW_RELIC_API_KEY").and_return(nil)
       }
 
       it 'raises ConfigurationError' do
         expect{web_type.get_metrics(services)}.to \
-          raise_exception ConfigurationError, /NEW_RELIC_LICENSE_KEY not set/
+          raise_exception ConfigurationError, /NEW_RELIC_API_KEY not set/
       end
     end
 
-    context 'when NEW_RELIC_LICENSE_KEY is specified' do
+    context 'when NEW_RELIC_API_KEY is specified' do
       let(:nr_mock) { double(Newrelic::Metrics) }
 
       before {
-        allow(ENV).to receive(:[]).with("NEW_RELIC_LICENSE_KEY"){ 'secret' }
+        allow(ENV).to receive(:[]).with("NEW_RELIC_API_KEY"){ 'secret' }
         allow(Newrelic::Metrics).to receive(:new).with('secret'){ nr_mock }
       }
 

@@ -18,7 +18,7 @@ module Scaltainer
           puts "\nEnvironment variables: \n"
           puts "- DOCKER_URL: defaults to local socket"
           puts "- HIREFIRE_TOKEN"
-          puts "- NEW_RELIC_LICENSE_KEY"
+          puts "- NEW_RELIC_API_KEY"
           puts "- RESPONSE_TIME_WINDOW: defaults to 5"
           puts "- LOG_LEVEL: defaults to INFO"
           puts "- DOCKER_SECRETS_PATH_GLOB: path glob containing env files to load"
@@ -48,7 +48,6 @@ module Scaltainer
         unless files.empty?
           require 'dotenv'
           Dotenv.load(*files)
-          puts ENV['NEW_RELIC_LICENSE_KEY']
         end
       end
     end

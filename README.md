@@ -57,7 +57,7 @@ set `HIREFIRE_TOKEN` environment variable before invoking
 endpoint (see below) to get the number of jobs per queue
 for each worker.
 
-- `NEW_RELIC_LICENSE_KEY`: New Relic license key. Currently New Relic
+- `NEW_RELIC_API_KEY`: New Relic API key. Currently New Relic
 is used to retrieve average response time metric for web services.
 More monitoring services can be added in the future.
 
