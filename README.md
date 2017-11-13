@@ -120,6 +120,57 @@ The configuration file (determined by `-f FILE` command line parameter) should b
 
 More details about configuration parameters can be found in [HireFire docs](https://help.hirefire.io/guides).
 
+## Docker installation and usage
+
+Scaltainer is availabe on Docker Hub, so you can `docker run` it:
+
+    docker run -it --rm rayyanqcri/scaltainer
+
+Which will print the usage. To add arguments, just append them:
+
+    docker run -it --rm rayyanqcri/scaltainer -f scaltainer.yml
+
+Scaltainer should typically be run as a minutely cron service.
+If you are using [rayyanqcri/swarm-scheduler](https://github.com/rayyanqcri/swarm-scheduler),
+a service definition for scaltainer is typically something like this:
+
+    version: '3.3'
+    services:
+      scaltainer:
+        image: rayyanqcri/scaltainer:latest
+        command: -f /scaltainer.yml --state-file /tmp/scaltainer-state.yml
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+          - DOCKER_URL=unix:///var/run/docker.sock
+          - DOCKER_SECRETS_PATH_GLOB={/run/secrets/*}
+          - RESPONSE_TIME_WINDOW=3
+        configs:
+          - source: scaltainer
+            target: /scaltainer.yml
+        secrets:
+          - scaltainer
+        deploy:
+          replicas: 0
+          restart_policy:
+            condition: none
+          placement:
+            constraints:
+              - node.role == manager
+    configs:
+      scaltainer:
+        file: scaltainer.yml
+    secrets:
+      scaltainer:
+        file: scaltainer.env
+
+Where `scaltainer.env` is a file containing HireFire and NewRelic secrets:
+
+    HIREFIRE_TOKEN=
+    NEW_RELIC_API_KEY=
+
+And `scaltainer.yml` is the scaltainer configuration file.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
