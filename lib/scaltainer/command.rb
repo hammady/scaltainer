@@ -4,7 +4,7 @@ require "optparse"
 module Scaltainer
   class Command
     def self.parse(args)
-      configfile, statefile = 'scaltainer.yml', nil
+      configfile, statefile, wait = 'scaltainer.yml', nil, 0
       OptionParser.new do |opts|
         opts.banner = "Usage: scaltainer [options]"
         opts.on("-f", "--conf-file FILE", "Specify configuration file (default: scaltainer.yml)") do |file|
@@ -12,6 +12,9 @@ module Scaltainer
         end
         opts.on("--state-file FILE", "Specify state file (default: <conf-file>.state)") do |file|
           statefile = file
+        end
+        opts.on("-w", "--wait SECONDS", "Specify wait time between repeated calls, 0 for no repetition (default: 0)") do |w|
+          wait = w.to_i
         end
         opts.on_tail("-h", "--help", "Show this message") do
           puts opts
@@ -35,7 +38,7 @@ module Scaltainer
       logger = Logger.new(STDOUT)
       logger.level = %w(debug info warn error fatal unknown).find_index((ENV['LOG_LEVEL'] || '').downcase) || 1
 
-      return configfile, statefile, logger
+      return configfile, statefile, logger, wait
     end
 
     private

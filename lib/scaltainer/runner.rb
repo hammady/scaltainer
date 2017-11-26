@@ -2,7 +2,7 @@ require "yaml"
 
 module Scaltainer
   class Runner
-    def initialize(configfile, statefile, logger)
+    def initialize(configfile, statefile, logger, wait)
       @logger = logger
       @default_service_config = {
         "min" => 0,
@@ -16,13 +16,23 @@ module Scaltainer
       Docker.logger = @logger
       state = get_state(statefile) || {}
       endpoint = config["endpoint"]
-      service_prefix = config["stack_name"]
-      iterate_services config["web_services"], service_prefix, ServiceTypeWeb.new(endpoint), state
-      iterate_services config["worker_services"], service_prefix, ServiceTypeWorker.new(endpoint), state
-      save_state statefile, state
+      service_type_web = ServiceTypeWeb.new(endpoint)
+      service_type_worker = ServiceTypeWorker.new(endpoint)
+      loop do
+        run config, state, service_type_web, service_type_worker
+        save_state statefile, state
+        sleep wait
+        break if wait == 0
+      end
     end
 
     private
+
+    def run(config, state, service_type_web, service_type_worker)
+      service_prefix = config["stack_name"]
+      iterate_services config["web_services"], service_prefix, service_type_web, state
+      iterate_services config["worker_services"], service_prefix, service_type_worker, state
+    end
 
     def get_state(statefile)
       YAML.load_file statefile if File.exists? statefile

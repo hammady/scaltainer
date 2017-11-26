@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/hammady/scaltainer.svg?branch=master)](https://travis-ci.org/hammady/scaltainer)
 [![Coverage Status](https://coveralls.io/repos/github/hammady/scaltainer/badge.svg?service=github&branch=master)](https://coveralls.io/github/hammady/scaltainer?branch=master)
+[![Gem Version](https://badge.fury.io/rb/scaltainer.svg)](https://badge.fury.io/rb/scaltainer)
 
 # Scaltainer
 
@@ -41,7 +42,12 @@ Example:
 
     scaltainer -f /path/to/configuration/file.yml --state-file /path/to/different/state/file.yml
 
-Typically, the above command should be put inside a cronjob that is triggered every minute or so.
+Typically one would want to repeatedly call scaltainer every minute or so. To do this
+specify the wait time between repetitions using the `-w` parameter in seconds:
+
+    scaltainer -w 60
+
+This will repeatedly call scaltainer every 60 seconds, sleeping in between.
 
 ## Configuration
 
