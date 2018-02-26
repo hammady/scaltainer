@@ -1,3 +1,27 @@
+module Scaltainer
+  class DockerService < ReplicaSetBase
+    def initialize(service_name, stack_name)
+      # set logger?
+      full_name = stack_name ? "#{stack_name}_#{service_name}" : service_name
+      @service = Docker::Service.all(filters: {name: [full_name]}.to_json)[0]
+      raise "Docker Service not found: #{full_name}" unless @service
+      @id = @service.id
+      super(full_name, 'service')
+    end
+
+    def get_replicas
+      replicated = @service.info["Spec"]["Mode"]["Replicated"]
+      raise ConfigurationError.new "Cannot replicate a global service: #{@name}" unless replicated
+      @replicas = replicated["Replicas"]
+    end
+
+    def set_replicas(replicas)
+      super
+      @service.scale replicas
+    end
+  end
+end
+
 # source: https://github.com/Stazer/docker-api/blob/feature/swarm_support/lib/docker/service.rb
 
 # This class represents a Docker Service. It's important to note that nothing
