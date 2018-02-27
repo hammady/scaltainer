@@ -2,7 +2,8 @@ require "yaml"
 
 module Scaltainer
   class Runner
-    def initialize(configfile, statefile, logger, wait)
+    def initialize(configfile, statefile, logger, wait, orchestrator)
+      @orchestrator = orchestrator
       @logger = logger
       @default_service_config = {
         "min" => 0,
@@ -13,7 +14,7 @@ module Scaltainer
       }
       @logger.debug "Scaltainer initialized with configuration file: #{configfile}, and state file: #{statefile}"
       config = YAML.load_file configfile
-      Docker.logger = @logger
+      Docker.logger = @logger if orchestrator == :swarm
       state = get_state(statefile) || {}
       endpoint = config["endpoint"]
       service_type_web = ServiceTypeWeb.new(endpoint)
@@ -89,7 +90,11 @@ module Scaltainer
 
     def get_service(service_name, stack_name)
       begin
-        service = DockerService.new service_name, stack_name
+        service = if @orchestrator == :swarm
+          DockerService.new service_name, stack_name
+        elsif @orchestrator == :kubernetes
+          KubeResource.new service_name, 'deployment', stack_name
+        end
       rescue => e
         raise NetworkError.new "Could not find resource with name #{service_name} in stack #{stack_name}: #{e.message}"
       end

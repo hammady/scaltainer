@@ -6,17 +6,16 @@ module Scaltainer
       @service = Docker::Service.all(filters: {name: [full_name]}.to_json)[0]
       raise "Docker Service not found: #{full_name}" unless @service
       @id = @service.id
-      super(full_name, 'service')
+      super(service_name, 'service', stack_name)
     end
 
     def get_replicas
       replicated = @service.info["Spec"]["Mode"]["Replicated"]
       raise ConfigurationError.new "Cannot replicate a global service: #{@name}" unless replicated
-      @replicas = replicated["Replicas"]
+      replicated["Replicas"]
     end
 
     def set_replicas(replicas)
-      super
       @service.scale replicas
     end
   end

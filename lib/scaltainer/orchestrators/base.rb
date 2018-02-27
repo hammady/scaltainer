@@ -2,16 +2,16 @@ module Scaltainer
   class ReplicaSetBase
     attr_accessor :id, :name, :type, :namespace
 
-    def initialize(name, type, namespace = nil, replicas = 0)
-      @name, @type, @namespace, @replicas = name, type, namespace, replicas
+    def initialize(name, type, namespace)
+      @name, @type, @namespace = name, type, namespace
     end
 
     def get_replicas
-      @replicas
+      raise 'Abstract method, please override'
     end
 
     def set_replicas(replicas)
-      @replicas = replicas
+      raise 'Abstract method, please override'
     end
   end
 end
