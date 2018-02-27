@@ -1,12 +1,12 @@
 module Scaltainer
   class DockerService < ReplicaSetBase
-    def initialize(service_name, stack_name)
+    def initialize(service_name, namespace)
       # set logger?
-      full_name = stack_name ? "#{stack_name}_#{service_name}" : service_name
+      full_name = namespace ? "#{namespace}_#{service_name}" : service_name
       @service = Docker::Service.all(filters: {name: [full_name]}.to_json)[0]
       raise "Docker Service not found: #{full_name}" unless @service
       @id = @service.id
-      super(service_name, 'service', stack_name)
+      super(service_name, 'service', namespace)
     end
 
     def get_replicas

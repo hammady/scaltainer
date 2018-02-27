@@ -30,9 +30,9 @@ module Scaltainer
     private
 
     def run(config, state, service_type_web, service_type_worker)
-      stack_name = config["stack_name"]
-      iterate_services config["web_services"], stack_name, service_type_web, state
-      iterate_services config["worker_services"], stack_name, service_type_worker, state
+      namespace = config["namespace"] || config["stack_name"]
+      iterate_services config["web_services"], namespace, service_type_web, state
+      iterate_services config["worker_services"], namespace, service_type_worker, state
     end
 
     def get_state(statefile)
@@ -43,7 +43,7 @@ module Scaltainer
       File.write(statefile, state.to_yaml)
     end
 
-    def iterate_services(services, stack_name, type, state)
+    def iterate_services(services, namespace, type, state)
       begin
         metrics = type.get_metrics services
         @logger.debug "Retrieved metrics for #{type} resources: #{metrics}"
@@ -51,10 +51,10 @@ module Scaltainer
           begin
             state[service_name] ||= {}
             service_state = state[service_name]
-            @logger.debug "Resource #{service_name} in stack #{stack_name} currently has state: #{service_state}"
+            @logger.debug "Resource #{service_name} in namespace #{namespace} currently has state: #{service_state}"
             service_config = @default_service_config.merge service_config
-            @logger.debug "Resource #{service_name} in stack #{stack_name} configuration: #{service_config}"
-            process_service service_name, service_config, service_state, stack_name, type, metrics
+            @logger.debug "Resource #{service_name} in namespace #{namespace} configuration: #{service_config}"
+            process_service service_name, service_config, service_state, namespace, type, metrics
           rescue RuntimeError => e
             # skipping service
             log_exception e
@@ -70,8 +70,8 @@ module Scaltainer
       @logger.log (e.class == Scaltainer::Warning ? Logger::WARN : Logger::ERROR), e.message
     end
 
-    def process_service(service_name, config, state, stack_name, type, metrics)
-      service = get_service service_name, stack_name
+    def process_service(service_name, config, state, namespace, type, metrics)
+      service = get_service service_name, namespace
       @logger.debug "Found #{service.type} at orchestrator with name '#{service.name}' and id '#{service.id}'"
       current_replicas = service.get_replicas
       @logger.debug "#{service.type.capitalize} #{service.name} is currently configured for #{current_replicas} replica(s)"
@@ -88,17 +88,17 @@ module Scaltainer
         end
     end
 
-    def get_service(service_name, stack_name)
+    def get_service(service_name, namespace)
       begin
         service = if @orchestrator == :swarm
-          DockerService.new service_name, stack_name
+          DockerService.new service_name, namespace
         elsif @orchestrator == :kubernetes
-          KubeResource.new service_name, 'deployment', stack_name
+          KubeResource.new service_name, 'deployment', namespace
         end
       rescue => e
-        raise NetworkError.new "Could not find resource with name #{service_name} in stack #{stack_name}: #{e.message}"
+        raise NetworkError.new "Could not find resource with name #{service_name} in namespace #{namespace}: #{e.message}"
       end
-      raise ConfigurationError.new "Unknown resource: #{service_name} in stack #{stack_name}" unless service
+      raise ConfigurationError.new "Unknown resource: #{service_name} in namespace #{namespace}" unless service
       service
     end
 

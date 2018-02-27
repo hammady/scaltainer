@@ -86,8 +86,8 @@ The configuration file (determined by `-f FILE` command line parameter) should b
 
     # to get worker metrics
     endpoint: https://your-app.com/hirefire/$HIREFIRE_TOKEN/info
-    # optional docker swarm stack name
-    stack_name: mystack
+    # optional docker swarm stack name or kubernetes namespace
+    namespace: mynamespace
     # list of web services to monitor
     web_services:
       # each service name should match docker service name
