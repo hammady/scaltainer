@@ -14,7 +14,7 @@ module Scaltainer
 
       services.reduce({}) do |hash, (service_name, service_config)|
         app_id = service_config["newrelic_app_id"]
-        raise ConfigurationError.new "Service #{service_name} does not have a corresponding newrelic_app_id" unless app_id
+        raise ConfigurationError.new "Resource #{service_name} does not have a corresponding newrelic_app_id" unless app_id
 
         begin
           metric = nr.get_avg_response_time app_id, from, to
@@ -28,8 +28,8 @@ module Scaltainer
 
     def determine_desired_replicas(metric, service_config, current_replicas)
       super
-      raise ConfigurationError.new "Missing max_response_time in web service configuration" unless service_config["max_response_time"]
-      raise ConfigurationError.new "Missing min_response_time in web service configuration" unless service_config["min_response_time"]
+      raise ConfigurationError.new "Missing max_response_time in web resource configuration" unless service_config["max_response_time"]
+      raise ConfigurationError.new "Missing min_response_time in web resource configuration" unless service_config["min_response_time"]
       unless service_config["min_response_time"] <= service_config["max_response_time"]
         raise ConfigurationError.new "min_response_time and max_response_time are not in order"
       end

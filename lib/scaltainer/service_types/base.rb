@@ -6,12 +6,12 @@ module Scaltainer
 
     def get_metrics(services)
       services_count = services.keys.length rescue 0
-      raise Scaltainer::Warning.new "No services found for #{self.class.name}" if services_count == 0
+      raise Scaltainer::Warning.new "No resources found for #{self.class.name}" if services_count == 0
     end
 
     def determine_desired_replicas(metric, service_config, current_replicas)
-      raise ConfigurationError.new 'No metric found for requested service' unless metric
-      raise ConfigurationError.new 'No configuration found for requested service' unless service_config
+      raise ConfigurationError.new 'No metric found for requested resource' unless metric
+      raise ConfigurationError.new 'No configuration found for requested resource' unless service_config
     end
 
     def adjust_desired_replicas(desired_replicas, config)
@@ -32,7 +32,7 @@ module Scaltainer
           yield
           state["upscale_sensitivity"] = 0
         else
-          logger.debug "Scaling up of service #{service_name} blocked by upscale_sensitivity at level " +
+          logger.debug "Scaling up of resource #{service_name} blocked by upscale_sensitivity at level " +
             "#{state["upscale_sensitivity"]} while level #{config["upscale_sensitivity"]} is required"
         end
       elsif replica_diff < 0  # TODO force down when above max?
@@ -45,17 +45,17 @@ module Scaltainer
             yield
             state["downscale_sensitivity"] = 0
           else
-            logger.debug "Scaling down of service #{service_name} blocked by downscale_sensitivity at level " +
+            logger.debug "Scaling down of resource #{service_name} blocked by downscale_sensitivity at level " +
               "#{state["downscale_sensitivity"]} while level #{config["downscale_sensitivity"]} is required"
           end
         else
-          logger.debug "Scaling down of service #{service_name} to #{metric} replicas blocked by a non-decrementable config"
+          logger.debug "Scaling down of resource #{service_name} to #{metric} replicas blocked by a non-decrementable config"
         end
       else
         # no breach, change state
         state["upscale_sensitivity"] = 0
         state["downscale_sensitivity"] = 0
-        logger.info "No need to scale service #{service_name}"
+        logger.info "No need to scale resource #{service_name}"
       end
     end
 
