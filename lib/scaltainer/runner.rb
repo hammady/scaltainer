@@ -75,8 +75,8 @@ module Scaltainer
       @logger.debug "Found #{service.type} at orchestrator with name '#{service.name}' and id '#{service.id}'"
       current_replicas = service.get_replicas
       @logger.debug "#{service.type.capitalize} #{service.name} is currently configured for #{current_replicas} replica(s)"
-      metric = metrics[service_name]
-      raise Scaltainer::Warning.new("Configured #{service.type} '#{service_name}' not found in metrics endpoint") unless metric
+      metric = metrics[service.name]
+      raise Scaltainer::Warning.new("Configured #{service.type} '#{service.name}' not found in metrics endpoint") unless metric
       desired_replicas = type.determine_desired_replicas metric, config, current_replicas
       @logger.debug "Desired number of replicas for #{service.type} #{service.name} is #{desired_replicas}"
       adjusted_replicas = type.adjust_desired_replicas(desired_replicas, config)
