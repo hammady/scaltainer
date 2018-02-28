@@ -3,8 +3,10 @@ require 'kubeclient'
 module Scaltainer
   class KubeResource < ReplicaSetBase
     def initialize(name, type, namespace)
-      super(name, type, namespace)
       @@client ||= self.class.get_client
+      # if namespace not specified, use the one found in configuration
+      namespace ||= @@namespace || 'default'
+      super(name, type, namespace)
       @resource = @@client.send("get_#{@type}", @name, @namespace)
       @id = @resource.metadata.uid
     end
@@ -31,6 +33,7 @@ module Scaltainer
       config = Kubeclient::Config.read(kubeconfig)
       url = get_api_url(config.context.api_endpoint)
       version = get_api_version(config.context.api_version)
+      # @@namespace = config.context.namespace # wait till PR#308 merged into kubeclient
       Kubeclient::Client.new(
         url, version,
         ssl_options: config.context.ssl_options,
@@ -49,7 +52,7 @@ module Scaltainer
         verify_ssl: ssl_verify
       }
       auth_options = {bearer_token: read_secret(serviceaccount, 'token')}
-      #namespace = read_secret(serviceaccount, 'namespace')
+      @@namespace = read_secret(serviceaccount, 'namespace')
       url = get_api_url('https://kubernetes.default:443')
       version = get_api_version('v1')
       Kubeclient::Client.new(
