@@ -4,32 +4,38 @@
 
 # Scaltainer
 
-A Ruby gem to monitor docker swarm mode services and auto-scale them based on user configuration.
+A Ruby gem to monitor Docker Swarm mode services and Kubernetes resources
+and auto-scale them based on user configuration.
 It can be used to monitor web services and worker services. The web services type has metrics like response time using [New Relic](https://newrelic.com/). The worker services type metrics are basically the queue size for each.
 This gem is inspired by [HireFire](https://manager.hirefire.io/) and was indeed motivated by the migration
-from [Heroku](https://www.heroku.com/) to Docker Swarm mode.
+from [Heroku](https://www.heroku.com/) to Docker.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-```ruby
-gem 'scaltainer'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
+Install using rubygems:
 
     $ gem install scaltainer
 
 ## Usage
 
+For Docker swarm:
+
+    scaltainer -o swarm
+
+Or simply:
+
     scaltainer
 
-This will do a one-time check on the running service replicas and sends scaling out/in commands to the swarm cluster as appropriate.
+For Kubernetes:
+
+    scaltainer -o kubernetes
+
+
+This will do a one-time check on the running docker service replicas
+or Kubernetes replication controllers, replica sets, or deployments.
+Then it sends scaling out/in commands to the cluster as appropriate.
 Configuration is read from `scaltainer.yml` by default. If you want to read from another file add `-f yourconfig.yml`:
 
     scaltainer -f yourconfig.yml
@@ -47,14 +53,43 @@ specify the wait time between repetitions using the `-w` parameter in seconds:
 
     scaltainer -w 60
 
-This will repeatedly call scaltainer every 60 seconds, sleeping in between.
+This will repeatedly call scaltainer every 60 seconds, sleeping in-between.
 
 ## Configuration
 
 ### Environment variables
 
+#### Docker swarm options
+
 - `DOCKER_URL`: Should point to the docker engine URL.
 If not set, it defaults to local unix socket.
+
+#### Kubernetes options
+
+- `KUBECONFIG`: set to Kubernetes config
+(default: `$HOME/.kube/config`) if you want to connect
+to the current configured cluster.
+
+- `KUBERNETES_API_SERVER`: overrides option in `KUBECONFIG`
+and defaults to `https://kubernetes.default:443`.
+
+- `KUBERNETES_SKIP_SSL_VERIFY`: `KUBECONFIG` option overrides
+this, set to any value to skip SSL verification.
+
+- `KUBERNETES_API_ENDPOINT`: defaults to `/api`.
+
+- `KUBERNETES_API_VERSION`: overrides option in `KUBECONFIG`
+and defaults to `v1`.
+
+- `KUBERNETES_CONTROLLER_KIND`: controller kind to scale,
+allowed values: `deployment` (default),
+`replication_controller`, or `replica_set`.
+
+Make sure the `KUBERNETES_CONTROLLER_KIND` you specify is
+part of the api specified using `KUBERNETES_API_ENDPOINT`
+and `KUBERNETES_API_VERSION`.
+
+#### General options
 
 - `HIREFIRE_TOKEN`: If your application is configured the
 [hirefire](https://help.hirefire.io/guides/hirefire/job-queue-any-programming-language) way, you need to
@@ -176,6 +211,10 @@ Where `scaltainer.env` is a file containing HireFire and NewRelic secrets:
     NEW_RELIC_API_KEY=
 
 And `scaltainer.yml` is the scaltainer configuration file.
+
+## Kubernetes installation and usage
+
+TODO
 
 ## Development
 
