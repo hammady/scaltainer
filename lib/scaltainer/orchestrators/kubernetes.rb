@@ -2,8 +2,9 @@ require 'kubeclient'
 
 module Scaltainer
   class KubeResource < ReplicaSetBase
-    def initialize(name, type, namespace)
+    def initialize(name, namespace)
       @@client ||= self.class.get_client
+      type = ENV['KUBERNETES_CONTROLLER_KIND'] || 'deployment'
       # if namespace not specified, use the one found in configuration
       namespace ||= @@namespace || 'default'
       super(name, type, namespace)

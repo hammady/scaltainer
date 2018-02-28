@@ -30,6 +30,8 @@ module Scaltainer
           puts "- KUBERNETES_SKIP_SSL_VERIFY: KUBECONFIG option overrides this, set to any value to skip SSL verification"
           puts "- KUBERNETES_API_ENDPOINT: defaults to /api"
           puts "- KUBERNETES_API_VERSION: overrides option in KUBECONFIG and defaults to v1"
+          puts "- KUBERNETES_CONTROLLER_KIND: controller kind to scale, allowed values: deployment (default), replication_controller, or replica_set"
+          puts "  Make sure the KUBERNETES_CONTROLLER_KIND you specify is part of the api specified using KUBERNETES_API_ENDPOINT and KUBERNETES_API_VERSION"
           puts "General options:"
           puts "- HIREFIRE_TOKEN"
           puts "- NEW_RELIC_API_KEY"

@@ -93,7 +93,7 @@ module Scaltainer
         service = if @orchestrator == :swarm
           DockerService.new service_name, namespace
         elsif @orchestrator == :kubernetes
-          KubeResource.new service_name, 'deployment', namespace
+          KubeResource.new service_name, namespace
         end
       rescue => e
         raise NetworkError.new "Could not find resource with name #{service_name} in namespace #{namespace}: #{e.message}"
