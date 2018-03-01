@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Hossam Hammady"]
   spec.email         = ["github@hammady.net"]
 
-  spec.summary       = %q{Autoscale docker swarm services based on application metrics and more}
-  spec.description   = %q{A ruby gem inspired by HireFire to autoscale docker swarm services.
+  spec.summary       = %q{Autoscale kubernetes controllers and docker services based on application metrics and more}
+  spec.description   = %q{A ruby gem inspired by HireFire to autoscale kubernetes controllers and docker services.
     Metrics can be standard average response time, New Relic web metrics, queue size for workers, ...}
   spec.homepage      = "https://github.com/hammady/scaltainer"
   spec.license       = "MIT"
