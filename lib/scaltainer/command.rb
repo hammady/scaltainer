@@ -19,6 +19,10 @@ module Scaltainer
         opts.on("-o", "--orchestrator swarm:kubernetes", [:swarm, :kubernetes], "Specify orchestrator type (default: swarm)") do |o|
           orchestrator = o
         end
+        opts.on("-v", "--version", "Show version and exit") do
+          puts Scaltainer::VERSION
+          exit 0
+        end
         opts.on_tail("-h", "--help", "Show this message") do
           puts opts
           puts "\nEnvironment variables: \n"
