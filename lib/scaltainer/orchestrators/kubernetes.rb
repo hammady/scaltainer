@@ -8,7 +8,7 @@ module Scaltainer
       # if namespace not specified, use the one found in configuration
       namespace ||= @@namespace || 'default'
       super(name, type, namespace)
-      @resource = @@client.send("get_#{@type}", @name, @namespace)
+      @resource = @@client.send("get_#{@type}", normalize_name(@name), @namespace)
       @id = @resource.metadata.uid
     end
 
@@ -17,7 +17,7 @@ module Scaltainer
     end
 
     def set_replicas(replicas)
-      @@client.send("patch_#{@type}", @name, {spec: {replicas: replicas}}, @namespace)
+      @@client.send("patch_#{@type}", normalize_name(@name), {spec: {replicas: replicas}}, @namespace)
     end
 
     private
@@ -75,6 +75,10 @@ module Scaltainer
 
     def self.read_secret(serviceaccount, secret)
       File.read("#{serviceaccount}/#{secret}")
+    end
+
+    def normalize_name(name)
+      name.gsub(/_/, '-')
     end
   end
 end
