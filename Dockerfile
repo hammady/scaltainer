@@ -2,7 +2,9 @@ FROM ruby:2.3
 
 label maintainer="Hossam Hammady <github@hammady.net>"
 
-RUN gem install scaltainer
+WORKDIR /home
+COPY / /home/
+RUN bundle install && bundle exec rake install
 
 ENTRYPOINT ["scaltainer"]
 
