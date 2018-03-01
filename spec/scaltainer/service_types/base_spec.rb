@@ -62,7 +62,7 @@ describe ServiceTypeBase do
 
       it 'raises ConfigurationError' do
         expect{base_type.get_metrics(services)}.to \
-          raise_exception Scaltainer::Warning, /No services found/
+          raise_exception Scaltainer::Warning, /No resources found/
       end
     end
 
@@ -71,7 +71,7 @@ describe ServiceTypeBase do
 
       it 'raises ConfigurationError' do
         expect{base_type.get_metrics(services)}.to \
-          raise_exception Scaltainer::Warning, /No services found/
+          raise_exception Scaltainer::Warning, /No resources found/
       end
     end
 
