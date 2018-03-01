@@ -161,25 +161,15 @@ The configuration file (determined by `-f FILE` command line parameter) should b
 
 More details about configuration parameters can be found in [HireFire docs](https://help.hirefire.io/guides).
 
-## Docker installation and usage
+## Docker Swarm usage
 
-Scaltainer is availabe on Docker Hub, so you can `docker run` it:
-
-    docker run -it --rm rayyanqcri/scaltainer
-
-Which will print the usage. To add arguments, just append them:
-
-    docker run -it --rm rayyanqcri/scaltainer -f scaltainer.yml
-
-Scaltainer should typically be run as a minutely cron service.
-If you are using [rayyanqcri/swarm-scheduler](https://github.com/rayyanqcri/swarm-scheduler),
-a service definition for scaltainer is typically something like this:
+A service definition for scaltainer is typically something like this:
 
     version: '3.3'
     services:
       scaltainer:
         image: rayyanqcri/scaltainer:latest
-        command: -f /scaltainer.yml --state-file /tmp/scaltainer-state.yml
+        command: -f /scaltainer.yml --state-file /tmp/scaltainer-state.yml -w 60
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
         environment:
@@ -192,9 +182,7 @@ a service definition for scaltainer is typically something like this:
         secrets:
           - scaltainer
         deploy:
-          replicas: 0
-          restart_policy:
-            condition: none
+          replicas: 1
           placement:
             constraints:
               - node.role == manager
@@ -212,9 +200,72 @@ Where `scaltainer.env` is a file containing HireFire and NewRelic secrets:
 
 And `scaltainer.yml` is the scaltainer configuration file.
 
-## Kubernetes installation and usage
+## Kubernetes usage
 
-TODO
+### Create a ConfigMap
+
+    kubectl create configmap scaltainer --from-file=/path/to/your/scaltainer.yml
+
+Where `scaltainer.yml` is the scaltainer configuration file.
+
+### Create a Secret
+
+    kubectl create secret generic scaltainer --from-env-file=/path/to/scaltainer.env
+
+Where `scaltainer.env` is a file containing HireFire and NewRelic secrets:
+
+    HIREFIRE_TOKEN=
+    NEW_RELIC_API_KEY=
+
+### Create a Deployment:
+
+    kubectl apply -f scaltainer-kube.yaml
+
+Where scaltainer-kube.yaml has the following content:
+
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    metadata:
+      labels:
+        app: scaltainer
+      name: scaltainer
+    spec:
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            app: scaltainer
+        spec:
+          containers:
+          - image: rayyanqcri/scaltainer:latest
+            name: scaltainer
+            args:
+              - -o
+              - kubernetes
+              - -f
+              - /etc/config/scaltainer.yml
+              - --state-file
+              - /tmp/scaltainer-state.yml
+              - -w
+              - 60
+            env:
+            - name: KUBERNETES_API_ENDPOINT
+              value: /apis/extensions
+            - name: KUBERNETES_API_VERSION
+              value: v1beta1
+            - name: KUBERNETES_CONTROLLER_KIND
+              value: deployment
+            envFrom:
+            - secretRef:
+                name: scaltainer
+            volumeMounts:
+            - name: scaltainer-config
+              mountPath: "/etc/config"
+          volumes:
+          - name: scaltainer-config
+            configMap:
+              name: scaltainer
+
 
 ## Development
 
