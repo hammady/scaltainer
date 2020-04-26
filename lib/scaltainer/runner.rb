@@ -1,8 +1,10 @@
 require "yaml"
+require 'prometheus/client'
+require 'prometheus/client/push'
 
 module Scaltainer
   class Runner
-    def initialize(configfile, statefile, logger, wait, orchestrator)
+    def initialize(configfile, statefile, logger, wait, orchestrator, pushgateway)
       @orchestrator = orchestrator
       @logger = logger
       @default_service_config = {
@@ -19,9 +21,12 @@ module Scaltainer
       endpoint = config["endpoint"]
       service_type_web = ServiceTypeWeb.new(endpoint)
       service_type_worker = ServiceTypeWorker.new(endpoint)
+      register_pushgateway(pushgateway) if pushgateway
+      namespace = config["namespace"] || config["stack_name"]
       loop do
-        run config, state, service_type_web, service_type_worker
+        run config, state, service_type_web, service_type_worker, namespace
         save_state statefile, state
+        sync_pushgateway(namespace, state) if pushgateway
         sleep wait
         break if wait == 0
       end
@@ -29,8 +34,7 @@ module Scaltainer
 
     private
 
-    def run(config, state, service_type_web, service_type_worker)
-      namespace = config["namespace"] || config["stack_name"]
+    def run(config, state, service_type_web, service_type_worker, namespace)
       iterate_services config["web_services"], namespace, service_type_web, state
       iterate_services config["worker_services"], namespace, service_type_worker, state
     end
@@ -82,9 +86,11 @@ module Scaltainer
       adjusted_replicas = type.adjust_desired_replicas(desired_replicas, config)
       @logger.debug "Desired number of replicas for #{service.type} #{service.name} is adjusted to #{adjusted_replicas}"
       replica_diff = adjusted_replicas - current_replicas
+      state["replicas"] = current_replicas
       type.yield_to_scale(replica_diff, config, state, metric,
         service.name, @logger) do
           scale_out service, current_replicas, adjusted_replicas
+          state["replicas"] = adjusted_replicas
         end
     end
 
@@ -111,6 +117,28 @@ module Scaltainer
       rescue => e
         raise NetworkError.new "Could not scale #{service.type} #{service.name} due to error: #{e.message}"
       end
+    end
+
+    def register_pushgateway(pushgateway)
+      @registry = Prometheus::Client.registry
+      @replicas_gauge = @registry.gauge(:rayyan_controller_replicas, docstring: 'Rayyan replicas', labels: [:controller, :namespace])
+      @ticks_counter = @registry.counter(:rayyan_scaltainer_ticks, docstring: 'Rayyan Scaltainer ticks', labels: [:namespace])
+
+      @pushgateway = Prometheus::Client::Push.new("scaltainer", "scaltainer", "http://#{pushgateway}")
+    end
+
+    def sync_pushgateway(namespace, state)
+      @logger.debug("Now syncing state #{state} in namespace #{namespace}")
+      state.each do |service, state|
+        @replicas_gauge.set(state["replicas"], labels: {namespace: namespace, controller: service}) if state["replicas"]
+      end
+      @ticks_counter.increment(labels: {namespace: namespace})
+      begin
+        @pushgateway.add(@registry)
+      rescue => e
+        @logger.warn "[#{e.class}] Error pushing metrics to the configured Prometheus Push Gateway: #{e.message}"
+      end
+      @logger.info "Pushed metrics successfully to the configured Prometheus Push Gateway"
     end
 
   end # class

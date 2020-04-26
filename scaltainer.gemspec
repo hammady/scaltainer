@@ -32,4 +32,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "docker-api"
   spec.add_runtime_dependency "kubeclient"
   spec.add_runtime_dependency "dotenv"
+  spec.add_runtime_dependency "prometheus-client"
 end
