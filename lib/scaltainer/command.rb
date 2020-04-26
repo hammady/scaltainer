@@ -4,7 +4,7 @@ require "optparse"
 module Scaltainer
   class Command
     def self.parse(args)
-      configfile, statefile, wait, orchestrator = 'scaltainer.yml', nil, 0, :swarm
+      configfile, statefile, wait, orchestrator, pushgateway = 'scaltainer.yml', nil, 0, :swarm, nil
       OptionParser.new do |opts|
         opts.banner = "Usage: scaltainer [options]"
         opts.on("-f", "--conf-file FILE", "Specify configuration file (default: scaltainer.yml)") do |file|
@@ -18,6 +18,9 @@ module Scaltainer
         end
         opts.on("-o", "--orchestrator swarm:kubernetes", [:swarm, :kubernetes], "Specify orchestrator type (default: swarm)") do |o|
           orchestrator = o
+        end
+        opts.on("-g", "--prometheus-push-gateway ADDRESS", "Specify prometheus push gateway address in the form of host:port") do |gw|
+          pushgateway = gw
         end
         opts.on("-v", "--version", "Show version and exit") do
           puts Scaltainer::VERSION
@@ -55,7 +58,7 @@ module Scaltainer
       logger = Logger.new(STDOUT)
       logger.level = %w(debug info warn error fatal unknown).find_index((ENV['LOG_LEVEL'] || '').downcase) || 1
 
-      return configfile, statefile, logger, wait, orchestrator
+      return configfile, statefile, logger, wait, orchestrator, pushgateway
     end
 
     private

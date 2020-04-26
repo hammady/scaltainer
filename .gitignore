@@ -6,7 +6,6 @@
 /pkg/
 /spec/reports/
 /tmp/
-Gemfile.lock
 .env
 scaltainer.yml
 scaltainer.yml.state

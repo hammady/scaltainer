@@ -55,6 +55,21 @@ specify the wait time between repetitions using the `-w` parameter in seconds:
 
 This will repeatedly call scaltainer every 60 seconds, sleeping in-between.
 
+If you would like to monitor the changes in scaling out and in. You can install
+Prometheus and add a configuration parameter pointing to its Push Gateway:
+
+    scaltainer -g prometheus-pushgateway.monitoring.svc.cluster.local:9091
+
+Where `prometheus-pushgateway.monitoring.svc.cluster.local:9091` is the address
+of the push gateway. For Kubernetes environments the above denotes the gateway service
+name (`prometheus-pushgateway`), where it is installed in the namespace called
+`monitoring`. Scaltainer will report the following metrics to Prometheus:
+
+- `rayyan_controller_replicas`: number of replicas scaled (or untouched thereof).
+This is labeled by the namespace and controller name, both matching the scaltainer
+configuration file.
+- `rayyan_scaltainer_ticks`: iterations scaltainer has performed (if `-w` is used)
+
 ## Configuration
 
 ### Environment variables
@@ -121,7 +136,7 @@ The configuration file (determined by `-f FILE` command line parameter) should b
 
     # to get worker metrics
     endpoint: https://your-app.com/hirefire/$HIREFIRE_TOKEN/info
-    # optional docker swarm stack name or kubernetes namespace
+    # optional docker swarm stack name or kubernetes namespace (useful if having push gateway)
     namespace: mynamespace
     # list of web services to monitor
     web_services:
