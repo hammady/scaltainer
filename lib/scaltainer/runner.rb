@@ -1,4 +1,5 @@
 require "yaml"
+require 'socket'
 require 'prometheus/client'
 require 'prometheus/client/push'
 
@@ -124,7 +125,7 @@ module Scaltainer
       @replicas_gauge = @registry.gauge(:rayyan_controller_replicas, docstring: 'Rayyan replicas', labels: [:controller, :namespace])
       @ticks_counter = @registry.counter(:rayyan_scaltainer_ticks, docstring: 'Rayyan Scaltainer ticks', labels: [:namespace])
 
-      @pushgateway = Prometheus::Client::Push.new("scaltainer", "scaltainer", "http://#{pushgateway}")
+      @pushgateway = Prometheus::Client::Push.new("scaltainer", Socket.gethostname, "http://#{pushgateway}")
     end
 
     def sync_pushgateway(namespace, state)
