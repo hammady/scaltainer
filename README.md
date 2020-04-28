@@ -65,10 +65,13 @@ of the push gateway. For Kubernetes environments the above denotes the gateway s
 name (`prometheus-pushgateway`), where it is installed in the namespace called
 `monitoring`. Scaltainer will report the following metrics to Prometheus:
 
-- `rayyan_controller_replicas`: number of replicas scaled (or untouched thereof).
+- `scaltainer_web_replicas_total`: number of web replicas scaled (or untouched thereof).
 This is labeled by the namespace and controller name, both matching the scaltainer
 configuration file.
-- `rayyan_scaltainer_ticks`: iterations scaltainer has performed (if `-w` is used)
+- `scaltainer_worker_replicas_total`: Same as above, but for workers
+- `scaltainer_web_response_time_seconds`: response times as reported by the web services
+- `scaltainer_worker_queue_size_total`: queue sizes as reported by the worker services
+- `scaltainer_ticks_total`: iterations scaltainer has performed (if `-w` is used)
 
 ## Configuration
 
