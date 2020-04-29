@@ -1,4 +1,5 @@
 require "yaml"
+require 'socket'
 require 'prometheus/client'
 require 'prometheus/client/push'
 
@@ -81,6 +82,8 @@ module Scaltainer
       @logger.debug "#{service.type.capitalize} #{service.name} is currently configured for #{current_replicas} replica(s)"
       metric = metrics[service.name]
       raise Scaltainer::Warning.new("Configured #{service.type} '#{service.name}' not found in metrics endpoint") unless metric
+      state["metric"] = metric
+      state["service_type"] = type.to_s
       desired_replicas = type.determine_desired_replicas metric, config, current_replicas
       @logger.debug "Desired number of replicas for #{service.type} #{service.name} is #{desired_replicas}"
       adjusted_replicas = type.adjust_desired_replicas(desired_replicas, config)
@@ -121,16 +124,29 @@ module Scaltainer
 
     def register_pushgateway(pushgateway)
       @registry = Prometheus::Client.registry
-      @replicas_gauge = @registry.gauge(:rayyan_controller_replicas, docstring: 'Rayyan replicas', labels: [:controller, :namespace])
-      @ticks_counter = @registry.counter(:rayyan_scaltainer_ticks, docstring: 'Rayyan Scaltainer ticks', labels: [:namespace])
+      @web_replicas_gauge = @registry.gauge(:scaltainer_web_replicas_total, docstring: 'Scaltainer controller replicas for web services', labels: [:controller, :namespace])
+      @worker_replicas_gauge = @registry.gauge(:scaltainer_worker_replicas_total, docstring: 'Scaltainer controller replicas for worker services', labels: [:controller, :namespace])
+      @web_metrics_gauge = @registry.gauge(:scaltainer_web_response_time_seconds, docstring: 'Scaltainer controller response time metric in seconds', labels: [:controller, :namespace])
+      @worker_metrics_gauge = @registry.gauge(:scaltainer_worker_queue_size_total, docstring: 'Scaltainer controller queue size metric', labels: [:controller, :namespace])
+      @ticks_counter = @registry.counter(:scaltainer_ticks_total, docstring: 'Scaltainer ticks', labels: [:namespace])
 
-      @pushgateway = Prometheus::Client::Push.new("scaltainer", "scaltainer", "http://#{pushgateway}")
+      @pushgateway = Prometheus::Client::Push.new("scaltainer", Socket.gethostname, "http://#{pushgateway}")
     end
 
     def sync_pushgateway(namespace, state)
       @logger.debug("Now syncing state #{state} in namespace #{namespace}")
+      factor = 1
       state.each do |service, state|
-        @replicas_gauge.set(state["replicas"], labels: {namespace: namespace, controller: service}) if state["replicas"]
+        if state["service_type"] == 'Web'
+          replicas_gauge = @web_replicas_gauge
+          metrics_gauge = @web_metrics_gauge
+          factor = 0.001
+        else
+          replicas_gauge = @worker_replicas_gauge
+          metrics_gauge = @worker_metrics_gauge
+        end
+        replicas_gauge.set(state["replicas"], labels: {namespace: namespace, controller: service})
+        metrics_gauge.set(state["metric"] * factor, labels: {namespace: namespace, controller: service})
       end
       @ticks_counter.increment(labels: {namespace: namespace})
       begin
