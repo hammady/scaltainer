@@ -73,6 +73,8 @@ configuration file.
 - `scaltainer_worker_queue_size_total`: queue sizes as reported by the worker services
 - `scaltainer_ticks_total`: iterations scaltainer has performed (if `-w` is used)
 
+If you prefer to use New Relic monitoring, replace the `-g` parameter with `--enable-newrelic-reporting`.
+If enabled, must set the environment variables `NEW_RELIC_LICENSE_KEY` and `NEW_RELIC_APP_NAME` (see below).
 ## Configuration
 
 ### Environment variables
@@ -133,6 +135,10 @@ environment variables are set using `docker config` or `docker secret`.
 These files should be in the form `VARIABLE=value`.
 A typical value of this variable would be: `{/run/secrets/*,/config1,/config2}`
 
+- `NEW_RELIC_LICENSE_KEY`: New Relic license key, required if `--enable_newrelic_reporting`
+is used.
+- `NEW_RELIC_APP_NAME`: New Relic application name, required if `--enable_newrelic_reporting`
+is used.
 ### Configuration file
 
 The configuration file (determined by `-f FILE` command line parameter) should be in the following form:

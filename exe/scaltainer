@@ -3,8 +3,8 @@
 require 'scaltainer'
 
 begin
-  configfile, statefile, logger, wait, orchestrator, pushgateway = Scaltainer::Command.parse ARGV
-  Scaltainer::Runner.new configfile, statefile, logger, wait, orchestrator, pushgateway
+  configfile, statefile, logger, wait, orchestrator, pushgateway, enable_newrelic_reporting = Scaltainer::Command.parse ARGV
+  Scaltainer::Runner.new configfile, statefile, logger, wait, orchestrator, pushgateway, enable_newrelic_reporting
 rescue => e
   $stderr.puts e.message
   $stderr.puts e.backtrace

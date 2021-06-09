@@ -2,10 +2,11 @@ require "yaml"
 require 'socket'
 require 'prometheus/client'
 require 'prometheus/client/push'
+require 'newrelic_rpm'
 
 module Scaltainer
   class Runner
-    def initialize(configfile, statefile, logger, wait, orchestrator, pushgateway)
+    def initialize(configfile, statefile, logger, wait, orchestrator, pushgateway, enable_newrelic_reporting)
       @orchestrator = orchestrator
       @logger = logger
       @default_service_config = {
@@ -23,11 +24,13 @@ module Scaltainer
       service_type_web = ServiceTypeWeb.new(endpoint)
       service_type_worker = ServiceTypeWorker.new(endpoint)
       register_pushgateway(pushgateway) if pushgateway
+      register_newrelic if enable_newrelic_reporting
       namespace = config["namespace"] || config["stack_name"]
       loop do
         run config, state, service_type_web, service_type_worker, namespace
         save_state statefile, state
         sync_pushgateway(namespace, state) if pushgateway
+        sync_newrelic(state) if enable_newrelic_reporting
         sleep wait
         break if wait == 0
       end
@@ -135,8 +138,8 @@ module Scaltainer
 
     def sync_pushgateway(namespace, state)
       @logger.debug("Now syncing state #{state} in namespace #{namespace}")
-      factor = 1
       state.each do |service, state|
+        factor = 1
         if state["service_type"] == 'Web'
           replicas_gauge = @web_replicas_gauge
           metrics_gauge = @web_metrics_gauge
@@ -151,10 +154,28 @@ module Scaltainer
       @ticks_counter.increment(labels: {namespace: namespace})
       begin
         @pushgateway.add(@registry)
+        @logger.info "Pushed metrics successfully to the configured Prometheus Push Gateway"
       rescue => e
         @logger.warn "[#{e.class}] Error pushing metrics to the configured Prometheus Push Gateway: #{e.message}"
       end
-      @logger.info "Pushed metrics successfully to the configured Prometheus Push Gateway"
+    end
+
+    def register_newrelic
+      ::NewRelic::Agent.manual_start
+    end
+
+    def record_newrelic_metric(name, value)
+      @logger.debug("Reporting NewRelic metric: #{name} = #{value}")
+      ::NewRelic::Agent.record_metric(name, value.to_i)
+    end
+
+    def sync_newrelic(state)
+      @logger.debug("Now reporting state #{state} to the NewRelic agent")
+      ::NewRelic::Agent.increment_metric('Custom/Scaltainer/ticks')
+      state.each do |service, state|
+        record_newrelic_metric "Custom/#{state["service_type"]}Replicas/#{service}", state["replicas"]
+        record_newrelic_metric "Custom/#{state["service_type"]}Metric/#{service}", state["metric"]
+      end
     end
 
   end # class

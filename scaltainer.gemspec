@@ -33,4 +33,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "kubeclient"
   spec.add_runtime_dependency "dotenv"
   spec.add_runtime_dependency "prometheus-client"
+  spec.add_runtime_dependency "newrelic_rpm"
 end
