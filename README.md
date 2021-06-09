@@ -75,6 +75,27 @@ configuration file.
 
 If you prefer to use New Relic monitoring, replace the `-g` parameter with `--enable-newrelic-reporting`.
 If enabled, must set the environment variables `NEW_RELIC_LICENSE_KEY` and `NEW_RELIC_APP_NAME` (see below).
+Once enabled, the below will be reported:
+
+- `Custom/WebReplicas/service`
+- `Custom/WorkerReplicas/service`
+- `Custom/WebMetric/service`
+- `Custom/WorkerMetric/service`
+- `Custom/Scaltainer/ticks`
+
+Where `service` is a placeholder for each service defined in `yourconfig.yml`.
+
+Here is an example NRQL to query the metrics:
+
+```
+FROM Metric
+SELECT max(newrelic.timeslice.value)
+WHERE appName = 'YOUR APP NAME'
+WITH METRIC_FORMAT 'Custom/WebReplicas/{web}'
+FACET web
+SINCE 1 day ago TIMESERIES MAX
+```
+
 ## Configuration
 
 ### Environment variables
