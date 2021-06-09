@@ -22,15 +22,15 @@ Install using rubygems:
 
 For Docker swarm:
 
-    scaltainer -o swarm
+    bundle exec scaltainer -o swarm
 
 Or simply:
 
-    scaltainer
+    bundle exec scaltainer
 
 For Kubernetes:
 
-    scaltainer -o kubernetes
+    bundle exec scaltainer -o kubernetes
 
 
 This will do a one-time check on the running docker service replicas
@@ -38,7 +38,7 @@ or Kubernetes replication controllers, replica sets, or deployments.
 Then it sends scaling out/in commands to the cluster as appropriate.
 Configuration is read from `scaltainer.yml` by default. If you want to read from another file add `-f yourconfig.yml`:
 
-    scaltainer -f yourconfig.yml
+    bundle exec scaltainer -f yourconfig.yml
 
 Note that after each run a new file is created (`yourconfig.yml.state`) which stores the state of the previous run.
 This is because there are some configuration parameters (like sensitivity) need to
@@ -46,19 +46,19 @@ remember previous runs.
 If you want to specify a different location for the state file, add the `--state-file` parameter.
 Example:
 
-    scaltainer -f /path/to/configuration/file.yml --state-file /path/to/different/state/file.yml
+    bundle exec scaltainer -f /path/to/configuration/file.yml --state-file /path/to/different/state/file.yml
 
 Typically one would want to repeatedly call scaltainer every minute or so. To do this
 specify the wait time between repetitions using the `-w` parameter in seconds:
 
-    scaltainer -w 60
+    bundle exec scaltainer -w 60
 
 This will repeatedly call scaltainer every 60 seconds, sleeping in-between.
 
 If you would like to monitor the changes in scaling out and in. You can install
 Prometheus and add a configuration parameter pointing to its Push Gateway:
 
-    scaltainer -g prometheus-pushgateway.monitoring.svc.cluster.local:9091
+    bundle exec scaltainer -g prometheus-pushgateway.monitoring.svc.cluster.local:9091
 
 Where `prometheus-pushgateway.monitoring.svc.cluster.local:9091` is the address
 of the push gateway. For Kubernetes environments the above denotes the gateway service

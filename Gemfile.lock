@@ -100,7 +100,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.15)
+  bundler (>= 2.2.10)
   coderay (~> 1.1)
   coveralls (~> 0.8)
   rake (>= 12.3.3)
@@ -108,4 +108,4 @@ DEPENDENCIES
   scaltainer!
 
 BUNDLED WITH
-   1.17.3
+   2.2.19
