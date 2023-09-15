@@ -212,7 +212,7 @@ A service definition for scaltainer is typically something like this:
     version: '3.3'
     services:
       scaltainer:
-        image: rayyanqcri/scaltainer:latest
+        image: hammady/scaltainer:latest
         command: -f /scaltainer.yml --state-file /tmp/scaltainer-state.yml -w 60
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
@@ -281,7 +281,7 @@ Where scaltainer-kube.yaml has the following content:
             app: scaltainer
         spec:
           containers:
-          - image: rayyanqcri/scaltainer:latest
+          - image: hammady/scaltainer:latest
             name: scaltainer
             args:
               - -o
