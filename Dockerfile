@@ -1,6 +1,6 @@
-FROM ruby:2.3
+FROM ruby:2.7
 
-label maintainer="Hossam Hammady <github@hammady.net>"
+LABEL maintainer="Hossam Hammady <github@hammady.net>"
 
 ENV NEW_RELIC_LOG=stdout
 ENV NEW_RELIC_AUTOSTART_DENYLISTED_CONSTANTS=Scaltainer
