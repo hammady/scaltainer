@@ -22,17 +22,17 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_development_dependency "bundler", ">= 2.2.10"
-  spec.add_development_dependency "rake", ">= 12.3.3"
-  spec.add_development_dependency 'rspec', '~> 3.5'
-  spec.add_development_dependency 'coderay', '~> 1.1'
-  spec.add_development_dependency 'simplecov', '~> 0.17.1'
-  spec.add_development_dependency 'simplecov-lcov', '~> 0.7.0'
+  spec.add_development_dependency "bundler", "~> 2.2"
+  spec.add_development_dependency "rake", "~> 13.0"
+  spec.add_development_dependency "rspec", "~> 3.5"
+  spec.add_development_dependency "coderay", "~> 1.1"
+  spec.add_development_dependency "simplecov", "~> 0.17"
+  spec.add_development_dependency "simplecov-lcov", "~> 0.7"
 
-  spec.add_runtime_dependency 'excon', '>= 0.47.0'
-  spec.add_runtime_dependency "docker-api"
-  spec.add_runtime_dependency "kubeclient"
-  spec.add_runtime_dependency "dotenv"
-  spec.add_runtime_dependency "prometheus-client"
-  spec.add_runtime_dependency "newrelic_rpm"
+  spec.add_runtime_dependency "excon", "~> 0.47"
+  spec.add_runtime_dependency "docker-api", "~> 2.1"
+  spec.add_runtime_dependency "kubeclient", "~> 4.9"
+  spec.add_runtime_dependency "dotenv", "~> 2.7"
+  spec.add_runtime_dependency "prometheus-client", "~> 2.1"
+  spec.add_runtime_dependency "newrelic_rpm", "~> 7.1"
 end

@@ -2,12 +2,12 @@ PATH
   remote: .
   specs:
     scaltainer (0.6.0)
-      docker-api
-      dotenv
-      excon (>= 0.47.0)
-      kubeclient
-      newrelic_rpm
-      prometheus-client
+      docker-api (~> 2.1)
+      dotenv (~> 2.7)
+      excon (~> 0.47)
+      kubeclient (~> 4.9)
+      newrelic_rpm (~> 7.1)
+      prometheus-client (~> 2.1)
 
 GEM
   remote: https://rubygems.org/
@@ -91,13 +91,13 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (>= 2.2.10)
+  bundler (~> 2.2)
   coderay (~> 1.1)
-  rake (>= 12.3.3)
+  rake (~> 13.0)
   rspec (~> 3.5)
   scaltainer!
-  simplecov (~> 0.17.1)
-  simplecov-lcov (~> 0.7.0)
+  simplecov (~> 0.17)
+  simplecov-lcov (~> 0.7)
 
 BUNDLED WITH
    2.2.19
