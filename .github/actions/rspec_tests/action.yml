@@ -1,0 +1,25 @@
+name: rspec-tests
+description: Composite action for rspec tests
+inputs:
+  github-token:
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install bundler
+      shell: bash
+      # The bundler version used must match the one in the repo's gemspec
+      run: gem install bundler:2.2.19
+    - name: Bundle dependencies
+      shell: bash
+      run: bundle
+    - name: Run rspec tests
+      shell: bash
+      env:
+        CI: true
+      run: bundle exec rspec
+    - name: Use coveralls
+      uses: coverallsapp/github-action@1.1.3
+      with:
+        github-token: ${{ inputs.github-token }}
+        path-to-lcov: 'coverage/lcov.info'

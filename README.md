@@ -1,6 +1,5 @@
-[![Build Status](https://travis-ci.org/hammady/scaltainer.svg?branch=master)](https://travis-ci.org/hammady/scaltainer)
+![Build Status](https://github.com/hammady/scaltainer/actions/workflows/tests.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/hammady/scaltainer/badge.svg?service=github&branch=master)](https://coveralls.io/github/hammady/scaltainer?branch=master)
-[![Gem Version](https://badge.fury.io/rb/scaltainer.svg)](https://badge.fury.io/rb/scaltainer)
 
 # Scaltainer
 

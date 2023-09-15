@@ -26,7 +26,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", ">= 12.3.3"
   spec.add_development_dependency 'rspec', '~> 3.5'
   spec.add_development_dependency 'coderay', '~> 1.1'
-  spec.add_development_dependency 'coveralls', '~> 0.8'
+  spec.add_development_dependency 'simplecov', '~> 0.17.1'
+  spec.add_development_dependency 'simplecov-lcov', '~> 0.7.0'
 
   spec.add_runtime_dependency 'excon', '>= 0.47.0'
   spec.add_runtime_dependency "docker-api"
