@@ -15,14 +15,24 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
 require 'simplecov'
-require 'coveralls'
+require 'simplecov-lcov'
 
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new [
-  SimpleCov::Formatter::HTMLFormatter,
-  Coveralls::SimpleCov::Formatter
-]
+SimpleCov.start do
+  if ENV['CI']
+    SimpleCov::Formatter::LcovFormatter.config do |config|
+      config.report_with_single_file = true
+      config.single_report_path = 'coverage/lcov.info'
+    end
 
-SimpleCov.start
+    SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new [
+      SimpleCov::Formatter::LcovFormatter
+    ]
+  else
+    SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new [
+      SimpleCov::Formatter::HTMLFormatter
+    ]
+  end
+end
 
 require 'scaltainer'
 

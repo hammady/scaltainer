@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/hammady/scaltainer.svg?branch=master)](https://travis-ci.org/hammady/scaltainer)
+![Build Status](https://github.com/hammady/scaltainer/actions/workflows/tests.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/hammady/scaltainer/badge.svg?service=github&branch=master)](https://coveralls.io/github/hammady/scaltainer?branch=master)
 [![Gem Version](https://badge.fury.io/rb/scaltainer.svg)](https://badge.fury.io/rb/scaltainer)
 
@@ -213,7 +213,7 @@ A service definition for scaltainer is typically something like this:
     version: '3.3'
     services:
       scaltainer:
-        image: rayyanqcri/scaltainer:latest
+        image: hammady/scaltainer:latest
         command: -f /scaltainer.yml --state-file /tmp/scaltainer-state.yml -w 60
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
@@ -282,7 +282,7 @@ Where scaltainer-kube.yaml has the following content:
             app: scaltainer
         spec:
           containers:
-          - image: rayyanqcri/scaltainer:latest
+          - image: hammady/scaltainer:latest
             name: scaltainer
             args:
               - -o
