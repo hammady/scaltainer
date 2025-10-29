@@ -19,15 +19,26 @@ describe ServiceTypeWorker do
     }
 
     context 'when endpoint returns valid json' do
-      let(:response_body) {
-        '[{"name":"worker1","quantity":10},{"name":"worker2","quantity":20}]'
-      }
       let(:metrics) {
         {"worker1" => 10, "worker2" => 20}
       }
+      context 'when value is under quantity key' do
+        let(:response_body) {
+          '[{"name":"worker1","quantity":10},{"name":"worker2","quantity":20}]'
+        }
 
-      it 'gets metrics from app endpoint' do
-        expect(worker_type.get_metrics(services)).to eq metrics
+        it 'gets metrics from app endpoint' do
+          expect(worker_type.get_metrics(services)).to eq metrics
+        end
+      end
+      context 'when value is under value key' do
+        let(:response_body) {
+          '[{"name":"worker1","value":10},{"name":"worker2","value":20}]'
+        }
+
+        it 'gets metrics from app endpoint' do
+          expect(worker_type.get_metrics(services)).to eq metrics
+        end
       end
     end
 

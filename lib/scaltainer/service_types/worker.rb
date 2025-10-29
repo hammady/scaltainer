@@ -9,7 +9,7 @@ module Scaltainer
       begin
         response = Excon.get(@app_endpoint)
         m = JSON.parse(response.body)
-        m.reduce({}){|hash, item| hash.merge!({item["name"] => item["quantity"]})}
+        m.reduce({}){|hash, item| hash.merge!({item["name"] => (item["quantity"] || item["value"])})}
       rescue JSON::ParserError => e
         raise ConfigurationError.new "app_endpoint returned non json response: #{response.body[0..128]}"
       rescue TypeError => e
