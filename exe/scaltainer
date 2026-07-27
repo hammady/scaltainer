@@ -5,6 +5,14 @@ require 'scaltainer'
 begin
   configfile, statefile, logger, wait, orchestrator, pushgateway, enable_newrelic_reporting = Scaltainer::Command.parse ARGV
   Scaltainer::Runner.new configfile, statefile, logger, wait, orchestrator, pushgateway, enable_newrelic_reporting
+rescue Scaltainer::AuthenticationError => e
+  # Credentials were rejected by the orchestrator. There is nothing this
+  # process can do about it while it is running, so exit non-zero and let the
+  # orchestrator restart us; on restart the credential is read from disk again.
+  # A dedicated exit code keeps this distinguishable from ordinary failures in
+  # `kubectl describe pod` (State -> Terminated -> Exit Code).
+  $stderr.puts "FATAL: #{e.message}"
+  exit 77
 rescue => e
   $stderr.puts e.message
   $stderr.puts e.backtrace

@@ -31,7 +31,9 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "excon", "~> 0.47"
   spec.add_runtime_dependency "docker-api", "~> 2.1"
-  spec.add_runtime_dependency "kubeclient", "~> 4.9"
+  # >= 4.10 re-reads :bearer_token_file on every request, which is what keeps a
+  # long-running process working across service account token rotation.
+  spec.add_runtime_dependency "kubeclient", "~> 4.10"
   spec.add_runtime_dependency "dotenv", "~> 2.7"
   spec.add_runtime_dependency "prometheus-client", "~> 2.1"
   spec.add_runtime_dependency "newrelic_rpm", "~> 7.1"

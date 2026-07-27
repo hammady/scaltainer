@@ -26,13 +26,20 @@ module Scaltainer
       register_pushgateway(pushgateway) if pushgateway
       register_newrelic if enable_newrelic_reporting
       namespace = config["namespace"] || config["stack_name"]
-      loop do
-        run config, state, service_type_web, service_type_worker, namespace
-        save_state statefile, state
-        sync_pushgateway(namespace, state) if pushgateway
-        sync_newrelic(state) if enable_newrelic_reporting
-        sleep wait
-        break if wait == 0
+      begin
+        loop do
+          run config, state, service_type_web, service_type_worker, namespace
+          save_state statefile, state
+          sync_pushgateway(namespace, state) if pushgateway
+          sync_newrelic(state) if enable_newrelic_reporting
+          sleep wait
+          break if wait == 0
+        end
+      rescue Scaltainer::AuthenticationError => e
+        # Log through the normal logger so the reason shows up in `kubectl logs`
+        # in the same format as everything else, then let it terminate the run.
+        @logger.fatal e.message
+        raise
       end
     end
 
@@ -107,6 +114,10 @@ module Scaltainer
         elsif @orchestrator == :kubernetes
           KubeResource.new service_name, namespace
         end
+      rescue Scaltainer::AuthenticationError
+        # Not a "resource not found" problem: our credentials were rejected.
+        # Let it through untouched so it terminates the process.
+        raise
       rescue => e
         raise NetworkError.new "Could not find resource with name #{service_name} in namespace #{namespace}: #{e.message}"
       end
@@ -120,6 +131,8 @@ module Scaltainer
       @logger.info "Scaling #{service.type} #{service.name} from #{current_replicas} to #{desired_replicas}"
       begin
         service.set_replicas desired_replicas
+      rescue Scaltainer::AuthenticationError
+        raise
       rescue => e
         raise NetworkError.new "Could not scale #{service.type} #{service.name} due to error: #{e.message}"
       end

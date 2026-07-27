@@ -5,7 +5,7 @@ PATH
       docker-api (~> 2.1)
       dotenv (~> 2.7)
       excon (~> 0.47)
-      kubeclient (~> 4.9)
+      kubeclient (~> 4.10)
       newrelic_rpm (~> 7.1)
       prometheus-client (~> 2.1)
 
@@ -42,8 +42,8 @@ GEM
     json (2.6.3)
     jsonpath (1.1.0)
       multi_json
-    kubeclient (4.9.3)
-      http (>= 3.0, < 5.0)
+    kubeclient (4.13.0)
+      http (>= 3.0, < 6.0)
       jsonpath (~> 1.0)
       recursive-open-struct (~> 1.1, >= 1.1.1)
       rest-client (~> 2.0)
