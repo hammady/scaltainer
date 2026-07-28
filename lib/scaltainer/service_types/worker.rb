@@ -14,8 +14,6 @@ module Scaltainer
         raise ConfigurationError.new "app_endpoint returned non json response: #{response.body[0..128]}"
       rescue TypeError => e
         raise ConfigurationError.new "app_endpoint returned unexpected json response: #{response.body[0..128]}"
-      rescue => e
-        raise NetworkError.new "Could not retrieve metrics from application endpoint: #{@app_endpoint}.\n#{e.message}"
       end
     end
 
