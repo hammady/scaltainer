@@ -63,12 +63,12 @@ module Scaltainer
             service_config = @default_service_config.merge service_config
             @logger.debug "Resource #{service_name} in namespace #{namespace} configuration: #{service_config}"
             process_service service_name, service_config, service_state, namespace, type, metrics
-          rescue RuntimeError => e
+          rescue ApplicationError => e
             # skipping service
             log_exception e
           end
         end
-      rescue RuntimeError => e
+      rescue ApplicationError => e
         # skipping service type
         log_exception e
       end
