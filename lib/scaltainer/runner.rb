@@ -101,14 +101,10 @@ module Scaltainer
     end
 
     def get_service(service_name, namespace)
-      begin
-        service = if @orchestrator == :swarm
-          DockerService.new service_name, namespace
-        elsif @orchestrator == :kubernetes
-          KubeResource.new service_name, namespace
-        end
-      rescue => e
-        raise NetworkError.new "Could not find resource with name #{service_name} in namespace #{namespace}: #{e.message}"
+      service = if @orchestrator == :swarm
+        DockerService.new service_name, namespace
+      elsif @orchestrator == :kubernetes
+        KubeResource.new service_name, namespace
       end
       raise ConfigurationError.new "Unknown resource: #{service_name} in namespace #{namespace}" unless service
       service
@@ -118,11 +114,7 @@ module Scaltainer
       return if current_replicas == desired_replicas
       # send scale command to orchestrator
       @logger.info "Scaling #{service.type} #{service.name} from #{current_replicas} to #{desired_replicas}"
-      begin
-        service.set_replicas desired_replicas
-      rescue => e
-        raise NetworkError.new "Could not scale #{service.type} #{service.name} due to error: #{e.message}"
-      end
+      service.set_replicas desired_replicas
     end
 
     def register_pushgateway(pushgateway)
