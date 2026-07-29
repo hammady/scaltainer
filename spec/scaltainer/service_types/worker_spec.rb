@@ -73,8 +73,8 @@ describe ServiceTypeWorker do
         })
       }
 
-      it 'raises NetworkError' do
-        expect{worker_type.get_metrics(services)}.to raise_exception NetworkError, /fake/
+      it 'lets the underlying error bubble up' do
+        expect{worker_type.get_metrics(services)}.to raise_exception SocketError, /fake/
       end
     end
   end # describe #get_metrics

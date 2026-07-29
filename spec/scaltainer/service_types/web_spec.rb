@@ -57,9 +57,9 @@ describe ServiceTypeWeb do
           }
         }
 
-        it 'raises NetworkError' do
+        it 'lets the underlying error bubble up' do
           expect{web_type.get_metrics(services)}.to \
-            raise_exception NetworkError, /Could not retrieve metrics/
+            raise_exception SocketError
         end
       end
 
