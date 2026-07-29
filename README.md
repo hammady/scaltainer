@@ -206,6 +206,47 @@ The configuration file (determined by `-f FILE` command line parameter) should b
 
 More details about configuration parameters can be found in [HireFire docs](https://help.hirefire.io/guides).
 
+## Error handling
+
+Scaltainer keeps going when a problem is likely to pass, and stops when it is not.
+Anything permanent, such as a mistake in your configuration or credentials that are
+refused, exits straight away so you hear about it immediately instead of finding it
+buried in the logs days later. Anything temporary is logged and tried again on the
+next tick.
+
+### Fatal errors
+
+Scaltainer exits with a non-zero status. Fix the cause and start it again.
+
+| What went wrong | Where |
+| --- | --- |
+| The configuration file is missing, or is not valid YAML | startup |
+| `--enable-newrelic-reporting` is used without `NEW_RELIC_LICENSE_KEY` or `NEW_RELIC_APP_NAME` | startup |
+| `NEW_RELIC_API_KEY` is not set, or New Relic refuses it | web services |
+| A web service has no `newrelic_app_id`, or New Relic does not recognise the one given | web services |
+| A web service is missing `min_response_time` or `max_response_time`, or the two are in the wrong order | web services |
+| A worker service is missing `ratio` | worker services |
+| `endpoint` returns JSON that is not the list of queues scaltainer expects | worker services |
+| Kubernetes refuses the credentials, or the service account may not read or patch the resource | kubernetes |
+| The Docker service is global and cannot be replicated | swarm |
+
+### Retriable errors
+
+Scaltainer logs these and carries on. Whatever could not be handled is left alone
+until the next tick.
+
+| What went wrong | What is skipped |
+| --- | --- |
+| A configured service is missing from the metrics response | that service |
+| The application is idle, so New Relic has no data for the window | that service |
+| `endpoint` reports a negative or non-integer queue size | that service |
+| The Kubernetes resource is not deployed yet, or changed while it was being scaled | that service |
+| Kubernetes returns a server error | that service |
+| No web or worker services are configured | that type |
+| `endpoint` answers with something that is not JSON | all worker services |
+| New Relic is rate limiting, erroring, or returns a payload that cannot be read | all web services |
+| The Prometheus push gateway is unreachable | nothing, that tick's metrics are dropped |
+
 ## Docker Swarm usage
 
 A service definition for scaltainer is typically something like this:

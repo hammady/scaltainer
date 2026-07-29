@@ -25,8 +25,8 @@ module Scaltainer
         opts.on("--enable-newrelic-reporting", "Enable metrics pushing to New Relic") do
           newrelic_license_key = ENV['NEW_RELIC_LICENSE_KEY']
           newrelic_app_name = ENV['NEW_RELIC_APP_NAME']
-          raise 'Must set NEW_RELIC_LICENSE_KEY environment variable if --enable-newrelic-reporting is set' if newrelic_license_key.nil? || newrelic_license_key == ""
-          raise 'Must set NEW_RELIC_APP_NAME environment variable if --enable-newrelic-reporting is set' if newrelic_app_name.nil? || newrelic_app_name == ""
+          raise ConfigurationError.new 'Must set NEW_RELIC_LICENSE_KEY environment variable if --enable-newrelic-reporting is set' if newrelic_license_key.nil? || newrelic_license_key == ""
+          raise ConfigurationError.new 'Must set NEW_RELIC_APP_NAME environment variable if --enable-newrelic-reporting is set' if newrelic_app_name.nil? || newrelic_app_name == ""
           enable_newrelic_reporting = true
         end
         opts.on("-v", "--version", "Show version and exit") do

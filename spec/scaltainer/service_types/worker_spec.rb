@@ -47,9 +47,9 @@ describe ServiceTypeWorker do
         'not json'
       }
 
-      it 'raises ConfigurationError' do
+      it 'raises NetworkError' do
         expect{worker_type.get_metrics(services)}.to \
-          raise_exception ConfigurationError, /non json response/
+          raise_exception NetworkError, /non json response/
       end
     end
 
@@ -73,8 +73,8 @@ describe ServiceTypeWorker do
         })
       }
 
-      it 'raises NetworkError' do
-        expect{worker_type.get_metrics(services)}.to raise_exception NetworkError, /fake/
+      it 'lets the underlying error bubble up' do
+        expect{worker_type.get_metrics(services)}.to raise_exception SocketError, /fake/
       end
     end
   end # describe #get_metrics
@@ -95,23 +95,23 @@ describe ServiceTypeWorker do
       let(:config) { {"ratio" => 3} }
 
       context 'when metric is not a number' do
-        it 'raises ConfigurationError' do
+        it 'raises Warning' do
           expect{worker_type.determine_desired_replicas('x', config, 0)}.to \
-            raise_exception ConfigurationError, /invalid metric/
+            raise_exception Scaltainer::Warning, /invalid metric/
         end
       end
 
       context 'when metric is a negative number' do
-        it 'raises ConfigurationError' do
+        it 'raises Warning' do
           expect{worker_type.determine_desired_replicas(-1, config, 0)}.to \
-            raise_exception ConfigurationError, /invalid metric/
+            raise_exception Scaltainer::Warning, /invalid metric/
         end
       end
 
       context 'when metric is a floating point number' do
-        it 'raises ConfigurationError' do
+        it 'raises Warning' do
           expect{worker_type.determine_desired_replicas(1.2, config, 0)}.to \
-            raise_exception ConfigurationError, /invalid metric/
+            raise_exception Scaltainer::Warning, /invalid metric/
         end
       end
 

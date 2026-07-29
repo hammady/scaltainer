@@ -11,11 +11,10 @@ module Scaltainer
         m = JSON.parse(response.body)
         m.reduce({}){|hash, item| hash.merge!({item["name"] => (item["quantity"] || item["value"])})}
       rescue JSON::ParserError => e
-        raise ConfigurationError.new "app_endpoint returned non json response: #{response.body[0..128]}"
+        # a non json body is typically a transient upstream error page, retry next tick
+        raise NetworkError.new "app_endpoint returned non json response: #{response.body[0..128]}"
       rescue TypeError => e
         raise ConfigurationError.new "app_endpoint returned unexpected json response: #{response.body[0..128]}"
-      rescue => e
-        raise NetworkError.new "Could not retrieve metrics from application endpoint: #{@app_endpoint}.\n#{e.message}"
       end
     end
 
@@ -23,7 +22,8 @@ module Scaltainer
       super
       raise ConfigurationError.new "Missing ratio in worker resource configuration" unless service_config["ratio"]
       if !metric.is_a?(Integer) || metric < 0
-        raise ConfigurationError.new "#{metric} is an invalid metric value, must be a non-negative number" 
+        # the metric comes from the endpoint at runtime, not from configuration
+        raise Scaltainer::Warning.new "#{metric} is an invalid metric value, must be a non-negative number"
       end
       desired_replicas = (metric * 1.0 / service_config["ratio"]).ceil
     end

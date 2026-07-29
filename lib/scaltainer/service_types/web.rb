@@ -16,11 +16,7 @@ module Scaltainer
         app_id = service_config["newrelic_app_id"]
         raise ConfigurationError.new "Resource #{service_name} does not have a corresponding newrelic_app_id" unless app_id
 
-        begin
-          metric = nr.get_avg_response_time app_id, from, to
-        rescue => e
-          raise NetworkError.new "Could not retrieve metrics from New Relic API for #{service_name}: #{e.message}"
-        end
+        metric = nr.get_avg_response_time app_id, from, to
 
         hash.merge!(service_name => metric)
       end

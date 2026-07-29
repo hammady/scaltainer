@@ -2,6 +2,10 @@ require 'kubeclient'
 
 module Scaltainer
   class KubeResource < ReplicaSetBase
+    # Statuses that no later attempt can recover from with the credentials at
+    # hand, as opposed to conflicts and outages which are worth retrying.
+    PERMANENT_ERROR_STATUSES = [401, 403].freeze
+
     def initialize(name, namespace)
       @@client ||= self.class.get_client
       type = ENV['KUBERNETES_CONTROLLER_KIND'] || 'deployment'
@@ -10,6 +14,8 @@ module Scaltainer
       super(name, type, namespace)
       @resource = @@client.send("get_#{@type}", normalize_name(@name), @namespace)
       @id = @resource.metadata.uid
+    rescue Kubeclient::HttpError => e
+      raise resource_error(e, 'find')
     end
 
     def get_replicas
@@ -18,9 +24,24 @@ module Scaltainer
 
     def set_replicas(replicas)
       @@client.send("patch_#{@type}", normalize_name(@name), {spec: {replicas: replicas}}, @namespace)
+    rescue Kubeclient::HttpError => e
+      raise resource_error(e, 'scale')
     end
 
     private
+
+    def resource_error(error, action)
+      message = "Could not #{action} #{@type} #{@name} in namespace #{@namespace}: #{error.message}"
+      case error.error_code
+      when *PERMANENT_ERROR_STATUSES
+        ConfigurationError.new message
+      when 404, 409
+        # the resource is absent or was changed since it was read, pick it up next tick
+        Scaltainer::Warning.new message
+      else
+        NetworkError.new message
+      end
+    end
 
     def self.get_client
       if ENV['KUBECONFIG']
