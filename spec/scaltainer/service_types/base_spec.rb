@@ -60,7 +60,7 @@ describe ServiceTypeBase do
     context 'when no services given' do
       let(:services) { nil }
 
-      it 'raises ConfigurationError' do
+      it 'raises Warning' do
         expect{base_type.get_metrics(services)}.to \
           raise_exception Scaltainer::Warning, /No resources found/
       end
@@ -69,7 +69,7 @@ describe ServiceTypeBase do
     context 'when empty services given' do
       let(:services) { {} }
 
-      it 'raises ConfigurationError' do
+      it 'raises Warning' do
         expect{base_type.get_metrics(services)}.to \
           raise_exception Scaltainer::Warning, /No resources found/
       end

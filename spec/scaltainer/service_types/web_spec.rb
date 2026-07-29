@@ -138,7 +138,8 @@ describe ServiceTypeWeb do
 
       context 'metric is NaN' do
         it 'does not change current replicas' do
-          # this happens when app is idle, call_count = 0
+          # an idle app (call_count = 0) now yields a nil metric and is skipped by
+          # the runner, so this only guards callers that supply NaN themselves
           expect(web_type.determine_desired_replicas(0.0/0, config, 5)).to eq 5
         end
       end
